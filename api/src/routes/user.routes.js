@@ -1,0 +1,25 @@
+const express = require('express');
+const router = express.Router();
+const userController = require('../controllers/user.controller');
+const { verifyToken, isAdminOrCoach } = require('../middleware/auth.middleware');
+
+// GET /api/users - Required for the Admin Panel Directory
+// Protected route, optionally restricted to Admin/Coach if sensitive, 
+// for now anyone logged in can view the directory (teammates might want to see team directory)
+router.get('/', verifyToken, userController.getUsers);
+
+// GET /api/users/:userId/profile - Get a specific user's detail
+router.get('/:userId/profile', verifyToken, userController.getProfile);
+
+// PUT /api/users/:userId/profile - Update profile
+// (A user can update their own profile, or an ADMIN can update anyone's profile)
+router.put('/:userId/profile', verifyToken, (req, res, next) => {
+    // Extra guard: only ADMIN/COACH or the owner can update the profile
+    if (req.role === 'ADMIN' || req.role === 'COACH' || req.userId === req.params.userId) {
+        next();
+    } else {
+        return res.status(403).json({ error: "Requiere rol de Administrador para modificar otros perfiles" });
+    }
+}, userController.upsertProfile);
+
+module.exports = router;
