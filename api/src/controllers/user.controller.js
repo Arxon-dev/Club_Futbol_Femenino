@@ -8,7 +8,7 @@ exports.getUsers = async (req, res) => {
       include: [
         {
           model: Profile,
-          attributes: ['firstName', 'lastName', 'phone', 'clothingSize', 'dorsal', 'position']
+          attributes: ['firstName', 'lastName', 'phone', 'birthdate', 'clothingSize', 'medicalInfo', 'dorsal', 'position']
         }
       ]
     });
