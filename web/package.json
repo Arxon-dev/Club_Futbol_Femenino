@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "start": "node server.js",
-    "preview": "vite preview"
+    "start": "vite preview"
   },
   "keywords": [],
   "author": "",
