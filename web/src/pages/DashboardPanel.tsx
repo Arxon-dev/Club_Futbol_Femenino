@@ -4,6 +4,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
+// @ts-ignore
+const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 interface StatsData {
   attendance: {
     totalEvents: number;
@@ -40,10 +43,10 @@ export const DashboardPanel: React.FC = () => {
 
       try {
         const [attRes, finRes] = await Promise.all([
-          fetch('http://localhost:3000/api/stats/attendance', {
+          fetch(`${BASE_API_URL}/stats/attendance`, {
             headers: { 'Authorization': `Bearer ${FAKE_ADMIN_TOKEN}` }
           }),
-          fetch('http://localhost:3000/api/stats/finances', {
+          fetch(`${BASE_API_URL}/stats/finances`, {
             headers: { 'Authorization': `Bearer ${FAKE_ADMIN_TOKEN}` }
           })
         ]);
