@@ -11,7 +11,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.opomelilla.futbol.data.remote.model.ProfileDto
-
+import java.text.SimpleDateFormat
+import java.util.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -28,16 +31,39 @@ fun ProfileScreen(
     var position by remember { mutableStateOf("") }
     var medicalInfo by remember { mutableStateOf("") }
 
+    val dateFormatDisplay = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val dateFormatApi = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    var expandedClothing by remember { mutableStateOf(false) }
+    val clothingOptions = listOf("XS", "S", "M", "L", "XL", "XXL")
+
+    var expandedPosition by remember { mutableStateOf(false) }
+    val positionOptions = listOf("Portera", "Cierre", "Ala", "Pívot", "Universal")
+
     // When the state becomes Success and it's the first load, populate variables
     LaunchedEffect(uiState) {
         if (uiState is ProfileUiState.Success) {
             val profile = (uiState as ProfileUiState.Success).profile
-            // We only want to populate if we haven't typed anything, 
-            // or we could just overwrite. For simplicity, we overwrite on exact load.
             firstName = profile.firstName ?: ""
             lastName = profile.lastName ?: ""
             phone = profile.phone ?: ""
-            birthdate = profile.birthdate ?: ""
+            
+            // Format incoming date from YYYY-MM-DD to DD/MM/YYYY
+            profile.birthdate?.let {
+                try {
+                    val date = dateFormatApi.parse(it)
+                    if (date != null) {
+                        birthdate = dateFormatDisplay.format(date)
+                        datePickerState.selectedDateMillis = date.time
+                    }
+                } catch (e: Exception) {
+                    birthdate = it
+                }
+            } ?: run { birthdate = "" }
+
             clothingSize = profile.clothingSize ?: ""
             dorsal = profile.dorsal?.toString() ?: ""
             position = profile.position ?: ""
@@ -96,18 +122,75 @@ fun ProfileScreen(
                     )
                     OutlinedTextField(
                         value = birthdate,
-                        onValueChange = { birthdate = it },
-                        label = { Text("Fecha de Nacimiento (YYYY-MM-DD)") },
-                        modifier = Modifier.fillMaxWidth()
+                        onValueChange = {},
+                        label = { Text("Fecha de Nacimiento (DD/MM/YYYY)") },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        readOnly = true,
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.DateRange,
+                                    contentDescription = "Seleccionar fecha"
+                                )
+                            }
+                        }
                     )
                     
+                    if (showDatePicker) {
+                        DatePickerDialog(
+                            onDismissRequest = { showDatePicker = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    datePickerState.selectedDateMillis?.let { millis ->
+                                        birthdate = dateFormatDisplay.format(Date(millis))
+                                    }
+                                    showDatePicker = false
+                                }) {
+                                    Text("OK")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDatePicker = false }) {
+                                    Text("Cancelar")
+                                }
+                            }
+                        ) {
+                            DatePicker(state = datePickerState)
+                        }
+                    }
+                    
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = clothingSize,
-                            onValueChange = { clothingSize = it },
-                            label = { Text("Talla") },
+                        ExposedDropdownMenuBox(
+                            expanded = expandedClothing,
+                            onExpandedChange = { expandedClothing = !expandedClothing },
                             modifier = Modifier.weight(1f)
-                        )
+                        ) {
+                            OutlinedTextField(
+                                value = clothingSize,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Talla") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedClothing) },
+                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                modifier = Modifier.menuAnchor()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expandedClothing,
+                                onDismissRequest = { expandedClothing = false }
+                            ) {
+                                clothingOptions.forEach { selectionOption ->
+                                    DropdownMenuItem(
+                                        text = { Text(selectionOption) },
+                                        onClick = {
+                                            clothingSize = selectionOption
+                                            expandedClothing = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        
                         OutlinedTextField(
                             value = dorsal,
                             onValueChange = { dorsal = it },
@@ -117,12 +200,35 @@ fun ProfileScreen(
                         )
                     }
 
-                    OutlinedTextField(
-                        value = position,
-                        onValueChange = { position = it },
-                        label = { Text("Posición en pista") },
+                    ExposedDropdownMenuBox(
+                        expanded = expandedPosition,
+                        onExpandedChange = { expandedPosition = !expandedPosition },
                         modifier = Modifier.fillMaxWidth()
-                    )
+                    ) {
+                        OutlinedTextField(
+                            value = position,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Posición en pista") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPosition) },
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedPosition,
+                            onDismissRequest = { expandedPosition = false }
+                        ) {
+                            positionOptions.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption) },
+                                    onClick = {
+                                        position = selectionOption
+                                        expandedPosition = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                     
                     OutlinedTextField(
                         value = medicalInfo,
@@ -134,11 +240,24 @@ fun ProfileScreen(
 
                     Button(
                         onClick = {
+                            // Convert Display format back to API format
+                            var finalBirthdate = birthdate
+                            if (birthdate.isNotBlank()) {
+                                try {
+                                    val date = dateFormatDisplay.parse(birthdate)
+                                    if (date != null) {
+                                        finalBirthdate = dateFormatApi.format(date)
+                                    }
+                                } catch (e: Exception) {
+                                    // Keep as is if parsing fails
+                                }
+                            }
+
                             val profile = ProfileDto(
                                 firstName = firstName.takeIf { it.isNotBlank() },
                                 lastName = lastName.takeIf { it.isNotBlank() },
                                 phone = phone.takeIf { it.isNotBlank() },
-                                birthdate = birthdate.takeIf { it.isNotBlank() },
+                                birthdate = finalBirthdate.takeIf { it.isNotBlank() },
                                 clothingSize = clothingSize.takeIf { it.isNotBlank() },
                                 dorsal = dorsal.toIntOrNull(),
                                 position = position.takeIf { it.isNotBlank() },
