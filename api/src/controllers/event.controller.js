@@ -1,4 +1,5 @@
 const { Event } = require('../models');
+const { sendBroadcastInternal } = require('./notificationController');
 
 exports.createEvent = async (req, res) => {
   try {
@@ -15,6 +16,31 @@ exports.createEvent = async (req, res) => {
       location,
       description
     });
+
+    // Send push notification asynchronously (don't await so we don't block the response)
+    try {
+      // Format the date for the notification
+      const eventDate = new Date(date);
+      const formattedDate = eventDate.toLocaleDateString('es-ES', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      const notificationTitle = 'Nuevo Evento Creado';
+      const notificationBody = `[${type || 'Evento'}] ${title} el ${formattedDate} en ${location || 'Lugar por definir'}`;
+      
+      // Navigate payload for deep linking
+      const dataPayload = {
+        navigateTo: 'events',
+        eventId: newEvent.id.toString()
+      };
+
+      sendBroadcastInternal(notificationTitle, notificationBody, dataPayload).catch(err => {
+        console.error('Failed to send broadcast after event creation:', err);
+      });
+    } catch (notifError) {
+      console.error('Error constructing notification:', notifError);
+    }
 
     res.status(201).json({ message: 'Evento creado correctamente', event: newEvent });
   } catch (error) {

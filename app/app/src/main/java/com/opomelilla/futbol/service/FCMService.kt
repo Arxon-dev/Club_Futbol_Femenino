@@ -19,16 +19,20 @@ class FCMService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d(TAG, "From: ${remoteMessage.from}")
 
+        var navigateTo: String? = null
+        var eventId: String? = null
+
         // Check if message contains a data payload.
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
-            // Handle data payload (optional, if you want silent background updates)
+            navigateTo = remoteMessage.data["navigateTo"]
+            eventId = remoteMessage.data["eventId"]
         }
 
         // Check if message contains a notification payload.
         remoteMessage.notification?.let {
             Log.d(TAG, "Message Notification Body: ${it.body}")
-            sendNotification(it.title, it.body)
+            sendNotification(it.title, it.body, navigateTo, eventId)
         }
     }
 
@@ -38,13 +42,15 @@ class FCMService : FirebaseMessagingService() {
         // We will implement this in the frontend Repository.
     }
 
-    private fun sendNotification(title: String?, messageBody: String?) {
+    private fun sendNotification(title: String?, messageBody: String?, navigateTo: String?, eventId: String?) {
         val intent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            navigateTo?.let { putExtra("navigateTo", it) }
+            eventId?.let { putExtra("eventId", it) }
         }
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val channelId = "futsal_notifications_channel"

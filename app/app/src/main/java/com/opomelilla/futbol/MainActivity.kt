@@ -17,10 +17,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import android.os.Build
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavController
 import androidx.core.content.ContextCompat
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -34,8 +36,17 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    // Store pending navigation from push notification
+    private var pendingNavigateTo: String? = null
+    private var pendingEventId: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Check for intent extras from FCMService
+        handleIntent(intent)
+
         enableEdgeToEdge()
         setContent {
             Club_Futbol_SalaTheme {
@@ -60,6 +71,13 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
+
+                // If app was already open and we get a new intent, handle navigation directly
+                LaunchedEffect(pendingNavigateTo, pendingEventId) {
+                    if (currentRoute != "login" && currentRoute != null) {
+                        navigateFromIntent(navController)
+                    }
+                }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -103,8 +121,13 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 onLoginSuccess = { role ->
                                     Toast.makeText(this@MainActivity, "Bienvenido! Rol: $role", Toast.LENGTH_SHORT).show()
-                                    navController.navigate("events") {
-                                        popUpTo("login") { inclusive = true }
+                                    // If we came from a push notification, navigate there instead of default
+                                    if (pendingNavigateTo != null) {
+                                        navigateFromIntent(navController)
+                                    } else {
+                                        navController.navigate("events") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
                                     }
                                 }
                             )
@@ -127,6 +150,45 @@ class MainActivity : ComponentActivity() {
                             com.opomelilla.futbol.ui.profile.ProfileScreen()
                         }
                     }
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        intent?.let {
+            val navTo = it.getStringExtra("navigateTo")
+            val evId = it.getStringExtra("eventId")
+            if (navTo != null) {
+                pendingNavigateTo = navTo
+                pendingEventId = evId
+            }
+        }
+    }
+
+    private fun navigateFromIntent(navController: androidx.navigation.NavController) {
+        val dest = pendingNavigateTo
+        val id = pendingEventId
+        
+        // Clear pending intent data
+        pendingNavigateTo = null
+        pendingEventId = null
+
+        if (dest == "events") {
+            if (id != null) {
+                // Navigate to specific event attendance
+                navController.navigate("attendance/$id") {
+                    popUpTo("login") { inclusive = true }
+                }
+            } else {
+                // Navigate to events list
+                navController.navigate("events") {
+                    popUpTo("login") { inclusive = true }
                 }
             }
         }

@@ -43,19 +43,13 @@ exports.sendNotificationToUser = async (req, res) => {
   }
 };
 
-exports.broadcastNotification = async (req, res) => {
+exports.sendBroadcastInternal = async (title, body, data = {}) => {
+  if (!isFirebaseInitialized) {
+    console.warn('Firebase is not initialized. Skipping broadcast.');
+    return null;
+  }
+
   try {
-    const { title, body, data } = req.body;
-
-    if (!isFirebaseInitialized) {
-      return res.status(503).json({ error: 'Firebase is not initialized on the server.' });
-    }
-
-    if (!title || !body) {
-      return res.status(400).json({ error: 'Missing title or body.' });
-    }
-
-    // Get all users with FCM tokens
     const users = await User.findAll({
       where: {
         fcmToken: {
@@ -70,7 +64,8 @@ exports.broadcastNotification = async (req, res) => {
     const tokens = users.map(u => u.fcmToken).filter(t => t);
 
     if (tokens.length === 0) {
-      return res.status(400).json({ error: 'No registered FCM tokens found.' });
+      console.log('No registered FCM tokens found for broadcast.');
+      return null;
     }
 
     const message = {
@@ -78,12 +73,33 @@ exports.broadcastNotification = async (req, res) => {
         title: title,
         body: body,
       },
-      data: data || {},
-      tokens: tokens, // Note: messaging().sendEachForMulticast() or sendMulticast() for multiple tokens
+      data: data,
+      tokens: tokens,
     };
 
-    // Send the message to multiple devices
     const response = await admin.messaging().sendEachForMulticast(message);
+    console.log(`Successfully broadcasted: ${response.successCount} messages, ${response.failureCount} failed.`);
+    return response;
+  } catch (error) {
+    console.error('Error in sendBroadcastInternal:', error);
+    throw error;
+  }
+};
+
+exports.broadcastNotification = async (req, res) => {
+  try {
+    const { title, body, data } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ error: 'Missing title or body.' });
+    }
+
+    const response = await exports.sendBroadcastInternal(title, body, data);
+
+    if (!response) {
+       // if it returned null either firebase not initialized or no tokens
+       return res.status(400).json({ error: 'No registered FCM tokens found or Firebase not initialized.' });
+    }
     
     res.json({ 
         success: true, 
