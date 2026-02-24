@@ -107,7 +107,7 @@ exports.getUserTransactions = async (req, res) => {
     const { userId } = req.params;
 
     // Security check: if user is PLAYER, they can only request their own finances
-    if (req.user.role === 'PLAYER' && req.user.id !== userId) {
+    if (req.userRole === 'PLAYER' && req.userId !== userId) {
       return res.status(403).json({ error: 'No autorizado para ver las finanzas de otro jugador' });
     }
 
