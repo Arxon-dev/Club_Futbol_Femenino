@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 
@@ -86,7 +87,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        if (currentRoute in listOf("events", "profile")) {
+                        if (currentRoute in listOf("events", "treasury", "profile")) {
                             NavigationBar {
                                 NavigationBarItem(
                                     icon = { Icon(Icons.Filled.DateRange, contentDescription = "Eventos") },
@@ -94,6 +95,18 @@ class MainActivity : ComponentActivity() {
                                     selected = currentRoute == "events",
                                     onClick = {
                                         navController.navigate("events") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                )
+                                NavigationBarItem(
+                                    icon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Tesorería") },
+                                    label = { Text("Tesorería") },
+                                    selected = currentRoute == "treasury",
+                                    onClick = {
+                                        navController.navigate("treasury") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -149,6 +162,9 @@ class MainActivity : ComponentActivity() {
                                 eventId = eventId,
                                 onNavigateBack = { navController.popBackStack() }
                             )
+                        }
+                        composable("treasury") {
+                            com.opomelilla.futbol.ui.finances.TreasuryScreen()
                         }
                         composable("profile") {
                             com.opomelilla.futbol.ui.profile.ProfileScreen()

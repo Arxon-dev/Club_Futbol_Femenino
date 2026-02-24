@@ -7,16 +7,18 @@ interface TransactionModalProps {
     onClose: () => void;
     onSaved: () => void;
     transaction?: Transaction | null;
+    users?: any[];
 }
 
 const CATEGORIES = ['CUOTA', 'MATERIAL', 'ARBITRAJE', 'PATROCINIO', 'EVENTO', 'OTROS'];
 
-export const TransactionModal = ({ isOpen, onClose, onSaved, transaction }: TransactionModalProps) => {
+export const TransactionModal = ({ isOpen, onClose, onSaved, transaction, users = [] }: TransactionModalProps) => {
     const [type, setType] = useState<'INCOME' | 'EXPENSE'>('INCOME');
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [userId, setUserId] = useState<string>('');
     
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -29,12 +31,14 @@ export const TransactionModal = ({ isOpen, onClose, onSaved, transaction }: Tran
                 setAmount(transaction.amount.toString());
                 setDescription(transaction.description);
                 setDate(transaction.date);
+                setUserId(transaction.userId || '');
             } else {
                 setType('INCOME');
                 setCategory('CUOTA');
                 setAmount('');
                 setDescription('');
                 setDate(new Date().toISOString().split('T')[0]);
+                setUserId('');
             }
         }
     }, [isOpen, transaction]);
@@ -50,7 +54,8 @@ export const TransactionModal = ({ isOpen, onClose, onSaved, transaction }: Tran
                 category,
                 amount: parseFloat(amount),
                 description,
-                date
+                date,
+                userId: userId || undefined
             };
 
             if (transaction) {
@@ -155,6 +160,22 @@ export const TransactionModal = ({ isOpen, onClose, onSaved, transaction }: Tran
                             >
                                 {CATEGORIES.map(cat => (
                                     <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Asignar a Jugador (Opcional)</label>
+                            <select
+                                value={userId}
+                                onChange={(e) => setUserId(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                            >
+                                <option value="">-- Ninguno (Gasto/Ingreso General) --</option>
+                                {users?.map(user => (
+                                    <option key={user.id} value={user.id}>
+                                        {user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName}` : user.email}
+                                    </option>
                                 ))}
                             </select>
                         </div>

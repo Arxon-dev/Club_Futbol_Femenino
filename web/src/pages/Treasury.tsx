@@ -5,6 +5,7 @@ import { TransactionModal } from '../components/finances/TransactionModal';
 
 export const Treasury = () => {
     const [data, setData] = useState<TreasuryData | null>(null);
+    const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,8 +19,12 @@ export const Treasury = () => {
     const loadData = async () => {
         try {
             setLoading(true);
-            const treasuryData = await financeService.getTransactions();
+            const [treasuryData, usersData] = await Promise.all([
+                financeService.getTransactions(),
+                import('../services/userService').then(m => m.userService.getUsers())
+            ]);
             setData(treasuryData);
+            setUsers(usersData);
             setError('');
         } catch (err: any) {
             setError('Error loading treasury data');
@@ -223,6 +228,7 @@ export const Treasury = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSaved={loadData}
                 transaction={selectedTransaction}
+                users={users}
             />
         </div>
     );

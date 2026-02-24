@@ -44,4 +44,9 @@ interface ApiService {
         @retrofit2.http.Path("userId") userId: String,
         @Body profile: com.opomelilla.futbol.data.remote.model.ProfileDto
     ): retrofit2.Response<com.opomelilla.futbol.data.remote.model.UserProfileDto>
+
+    @GET("finances/user/{userId}")
+    suspend fun getFinances(
+        @retrofit2.http.Path("userId") userId: String
+    ): com.opomelilla.futbol.data.remote.model.TreasuryDataDto
 }

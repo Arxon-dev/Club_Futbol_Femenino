@@ -100,3 +100,44 @@ exports.deleteTransaction = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete transaction' });
   }
 };
+
+// Get transactions for a specific user
+exports.getUserTransactions = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Security check: if user is PLAYER, they can only request their own finances
+    if (req.user.role === 'PLAYER' && req.user.id !== userId) {
+      return res.status(403).json({ error: 'No autorizado para ver las finanzas de otro jugador' });
+    }
+
+    const transactions = await Transaction.findAll({
+      where: { userId },
+      order: [['date', 'DESC'], ['createdAt', 'DESC']]
+    });
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach(t => {
+      const amount = parseFloat(t.amount);
+      if (t.type === 'INCOME') totalIncome += amount;
+      if (t.type === 'EXPENSE') totalExpense += amount;
+    });
+
+    const balance = totalIncome - totalExpense;
+
+    res.json({
+      transactions,
+      summary: {
+        totalIncome,
+        totalExpense,
+        balance
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching user transactions:', error);
+    res.status(500).json({ error: 'Failed to fetch user transactions' });
+  }
+};

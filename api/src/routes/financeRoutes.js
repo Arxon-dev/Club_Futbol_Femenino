@@ -3,8 +3,12 @@ const router = express.Router();
 const financeController = require('../controllers/financeController');
 const { verifyToken, verifyRole } = require('../middleware/auth.middleware');
 
-// Protect all finance routes. Allow only ADMIN or COACH to read/write for now
 router.use(verifyToken);
+
+// Player/Personal finances
+router.get('/user/:userId', financeController.getUserTransactions);
+
+// Admin/Coach routes
 router.use(verifyRole(['ADMIN', 'COACH']));
 
 router.get('/', financeController.getTransactions);
