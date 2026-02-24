@@ -41,7 +41,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF3F4F6)) // Tailwind gray-100 pseudo-background
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -57,14 +57,14 @@ fun LoginScreen(
             text = "TORREBLANCA MELILLA C.F",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E3A8A), // Tailwind blue-900
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 8.dp),
             textAlign = TextAlign.Center
         )
         Text(
             text = "Inicia sesión para continuar",
             fontSize = 16.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
@@ -103,7 +103,7 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2563EB) // Tailwind blue-600
+                containerColor = MaterialTheme.colorScheme.primary
             ),
             enabled = uiState !is LoginUiState.Loading
         ) {
