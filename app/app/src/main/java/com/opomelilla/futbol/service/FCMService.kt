@@ -21,6 +21,8 @@ class FCMService : FirebaseMessagingService() {
 
         var title: String? = null
         var body: String? = null
+        var navigateTo: String? = null
+        var eventId: String? = null
 
         // Check if message contains a notification payload (e.g. from Firebase Web Console).
         remoteMessage.notification?.let {
