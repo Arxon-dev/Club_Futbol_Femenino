@@ -24,12 +24,13 @@ exports.sendNotificationToUser = async (req, res) => {
       return res.status(400).json({ error: 'User does not have an FCM token registered.' });
     }
 
+    // Convert all data to strings as Firebase requires
+    const payloadData = { ...(data || {}) };
+    payloadData.title = String(title);
+    payloadData.body = String(body);
+
     const message = {
-      notification: {
-        title: title,
-        body: body,
-      },
-      data: data || {},
+      data: payloadData,
       token: user.fcmToken,
     };
 
@@ -68,12 +69,13 @@ exports.sendBroadcastInternal = async (title, body, data = {}) => {
       return null;
     }
 
+    // Convert all data to strings as Firebase requires
+    const payloadData = { ...(data || {}) };
+    payloadData.title = String(title);
+    payloadData.body = String(body);
+
     const message = {
-      notification: {
-        title: title,
-        body: body,
-      },
-      data: data,
+      data: payloadData,
       tokens: tokens,
     };
 

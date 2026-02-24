@@ -19,20 +19,29 @@ class FCMService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d(TAG, "From: ${remoteMessage.from}")
 
-        var navigateTo: String? = null
-        var eventId: String? = null
+        var title: String? = null
+        var body: String? = null
 
-        // Check if message contains a data payload.
+        // Check if message contains a notification payload (e.g. from Firebase Web Console).
+        remoteMessage.notification?.let {
+            title = it.title
+            body = it.body
+            Log.d(TAG, "Message Notification Body: $body")
+        }
+
+        // Check if message contains a data payload (our custom backend sends data-only messages).
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
             navigateTo = remoteMessage.data["navigateTo"]
             eventId = remoteMessage.data["eventId"]
+            
+            // Extract title and body from data payload if available
+            remoteMessage.data["title"]?.let { title = it }
+            remoteMessage.data["body"]?.let { body = it }
         }
 
-        // Check if message contains a notification payload.
-        remoteMessage.notification?.let {
-            Log.d(TAG, "Message Notification Body: ${it.body}")
-            sendNotification(it.title, it.body, navigateTo, eventId)
+        if (title != null || body != null) {
+            sendNotification(title, body, navigateTo, eventId)
         }
     }
 
