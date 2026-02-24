@@ -37,6 +37,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @javax.inject.Inject
+    lateinit var tokenManager: com.opomelilla.futbol.data.local.TokenManager
+
     // Store pending navigation from push notification
     private var pendingNavigateTo: String? = null
     private var pendingEventId: String? = null
@@ -75,7 +78,8 @@ class MainActivity : ComponentActivity() {
                 // If app was already open and we get a new intent, handle navigation directly
                 LaunchedEffect(pendingNavigateTo, pendingEventId) {
                     if (currentRoute != "login" && currentRoute != null) {
-                        navigateFromIntent(navController)
+                        val role = tokenManager.getRole()
+                        navigateFromIntent(navController, role)
                     }
                 }
 
@@ -123,7 +127,7 @@ class MainActivity : ComponentActivity() {
                                     Toast.makeText(this@MainActivity, "Bienvenido! Rol: $role", Toast.LENGTH_SHORT).show()
                                     // If we came from a push notification, navigate there instead of default
                                     if (pendingNavigateTo != null) {
-                                        navigateFromIntent(navController)
+                                        navigateFromIntent(navController, role)
                                     } else {
                                         navController.navigate("events") {
                                             popUpTo("login") { inclusive = true }
@@ -171,7 +175,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun navigateFromIntent(navController: androidx.navigation.NavController) {
+    private fun navigateFromIntent(navController: androidx.navigation.NavController, role: String? = null) {
         val dest = pendingNavigateTo
         val id = pendingEventId
         
@@ -180,13 +184,13 @@ class MainActivity : ComponentActivity() {
         pendingEventId = null
 
         if (dest == "events") {
-            if (id != null) {
-                // Navigate to specific event attendance
+            if (id != null && (role == "ADMIN" || role == "COACH")) {
+                // Navigate to specific event attendance for Admins/Coaches
                 navController.navigate("attendance/$id") {
                     popUpTo("login") { inclusive = true }
                 }
             } else {
-                // Navigate to events list
+                // Navigate to events list for players (or if no ID)
                 navController.navigate("events") {
                     popUpTo("login") { inclusive = true }
                 }

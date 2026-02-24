@@ -35,6 +35,11 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- BroadcastReceiver for handling Action Buttons from Notifications -->
+        <receiver
+            android:name=".receiver.AttendanceReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

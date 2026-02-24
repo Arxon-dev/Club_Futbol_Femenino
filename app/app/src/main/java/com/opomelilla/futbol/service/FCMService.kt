@@ -53,8 +53,11 @@ class FCMService : FirebaseMessagingService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        // Generate a unique ID for this notification
+        val notificationId = System.currentTimeMillis().toInt()
         val channelId = "futsal_notifications_channel"
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title ?: "Nueva Notificación")
@@ -62,6 +65,39 @@ class FCMService : FirebaseMessagingService() {
             .setAutoCancel(true)
             .setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
+
+        // Add Attendance Action Buttons if eventId is provided (assuming it's an event notification)
+        if (eventId != null) {
+            val attendIntent = Intent(this, com.opomelilla.futbol.receiver.AttendanceReceiver::class.java).apply {
+                putExtra("eventId", eventId)
+                putExtra("action", "ATTENDING")
+                putExtra("notificationId", notificationId)
+            }
+            val attendPendingIntent = PendingIntent.getBroadcast(
+                this, 1, attendIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val declineIntent = Intent(this, com.opomelilla.futbol.receiver.AttendanceReceiver::class.java).apply {
+                putExtra("eventId", eventId)
+                putExtra("action", "NOT_ATTENDING")
+                putExtra("notificationId", notificationId)
+            }
+            val declinePendingIntent = PendingIntent.getBroadcast(
+                this, 2, declineIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            notificationBuilder.addAction(
+                0, // No icon for modern Android
+                "Asistir",
+                attendPendingIntent
+            ).addAction(
+                0,
+                "No Asistir",
+                declinePendingIntent
+            )
+        }
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
