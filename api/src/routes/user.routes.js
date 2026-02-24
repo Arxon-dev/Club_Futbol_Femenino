@@ -8,6 +8,15 @@ const { verifyToken, isAdminOrCoach } = require('../middleware/auth.middleware')
 // for now anyone logged in can view the directory (teammates might want to see team directory)
 router.get('/', verifyToken, userController.getUsers);
 
+// POST /api/users - Create new user (Admin only)
+router.post('/', verifyToken, (req, res, next) => {
+    if (req.role === 'ADMIN') {
+        next();
+    } else {
+        return res.status(403).json({ error: "Se requiere rol de Administrador para crear usuarios" });
+    }
+}, userController.createUser);
+
 // GET /api/users/:userId/profile - Get a specific user's detail
 router.get('/:userId/profile', verifyToken, userController.getProfile);
 

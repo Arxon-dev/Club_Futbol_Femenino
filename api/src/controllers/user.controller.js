@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const { User, Profile } = require('../models');
 
 // Obtener todas las usuarias con sus perfiles
@@ -67,5 +68,52 @@ exports.upsertProfile = async (req, res) => {
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ error: "No se pudo actualizar el perfil" });
+  }
+};
+
+// Crear un nuevo usuario (Admin)
+exports.createUser = async (req, res) => {
+  try {
+    const { email, password, role, firstName, lastName } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email y contraseña son obligatorios" });
+    }
+
+    // Verificar si el correo ya existe
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(409).json({ error: "El email ya está registrado" });
+    }
+
+    // Hashear contraseña
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
+    // Crear User
+    const newUser = await User.create({
+      email,
+      password: hashedPassword,
+      role: role || 'PLAYER'
+    });
+
+    // Crear Profile
+    const newProfile = await Profile.create({
+      userId: newUser.id,
+      firstName: firstName || null,
+      lastName: lastName || null
+    });
+
+    // Omitir el envío de la contraseña hasheada
+    const userResponse = {
+      id: newUser.id,
+      email: newUser.email,
+      role: newUser.role,
+      profile: newProfile
+    };
+
+    res.status(201).json({ message: "Usuario creado exitosamente", user: userResponse });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({ error: "No se pudo crear el usuario" });
   }
 };

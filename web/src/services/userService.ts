@@ -61,5 +61,23 @@ export const userService = {
     }
     
     return response.json();
+  },
+
+  async createUser(userData: any): Promise<any> {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify(userData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create user');
+    }
+    
+    return response.json();
   }
 };

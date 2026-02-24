@@ -7,6 +7,15 @@ export default function UsersPanel() {
   const [error, setError] = useState('');
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
 
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [newUserFormData, setNewUserFormData] = useState({
+    email: '',
+    password: '',
+    role: 'PLAYER',
+    firstName: '',
+    lastName: ''
+  });
+
   // Form state
   const [formData, setFormData] = useState<ProfileDto>({});
 
@@ -57,16 +66,37 @@ export default function UsersPanel() {
     }
   };
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await userService.createUser(newUserFormData);
+      await fetchUsers();
+      setIsCreatingUser(false);
+      setNewUserFormData({ email: '', password: '', role: 'PLAYER', firstName: '', lastName: '' });
+      alert("Usuario creado exitosamente");
+    } catch (err: any) {
+      alert(err.message || 'Error creating user');
+    }
+  };
+
   if (loading) return <div className="p-4">Cargando directorio...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
     <div className="space-y-6">
-      <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 shadow rounded-lg">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">Directorio de Jugadoras y Staff</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Gestiona los perfiles, fichas médicas y deportivas de todos los miembros del club.
-        </p>
+      <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 shadow rounded-lg flex justify-between items-center">
+        <div>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Directorio de Jugadoras y Staff</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Gestiona los perfiles, fichas médicas y deportivas de todos los miembros del club.
+          </p>
+        </div>
+        <button
+          onClick={() => setIsCreatingUser(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#ED1C24] hover:bg-[#DE2D44] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ED1C24] transition-colors duration-200"
+        >
+          Añadir Usuario
+        </button>
       </div>
 
       <div className="flex flex-col">
@@ -210,6 +240,67 @@ export default function UsersPanel() {
                     Guardar
                   </button>
                   <button type="button" onClick={closeEditor} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE USER MODAL */}
+      {isCreatingUser && (
+        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title-create" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setIsCreatingUser(false)}></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+              <form onSubmit={handleCreateUser}>
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title-create">
+                    Añadir Nuevo Usuario
+                  </h3>
+                  <div className="space-y-4">
+                    
+                    <div>
+                      <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700">Email *</label>
+                      <input required type="email" id="newEmail" value={newUserFormData.email} onChange={e => setNewUserFormData({...newUserFormData, email: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                    </div>
+
+                    <div>
+                      <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">Contraseña Inicial *</label>
+                      <input required type="password" id="newPassword" value={newUserFormData.password} onChange={e => setNewUserFormData({...newUserFormData, password: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                    </div>
+
+                    <div>
+                      <label htmlFor="newRole" className="block text-sm font-medium text-gray-700">Rol *</label>
+                      <select id="newRole" value={newUserFormData.role} onChange={e => setNewUserFormData({...newUserFormData, role: e.target.value})} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="PLAYER">Jugadora (PLAYER)</option>
+                        <option value="COACH">Entrenador (COACH)</option>
+                        <option value="ADMIN">Administrador (ADMIN)</option>
+                        <option value="PARENT">Familiar (PARENT)</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="newFirstName" className="block text-sm font-medium text-gray-700">Nombre</label>
+                        <input type="text" id="newFirstName" value={newUserFormData.firstName} onChange={e => setNewUserFormData({...newUserFormData, firstName: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                      </div>
+                      <div>
+                        <label htmlFor="newLastName" className="block text-sm font-medium text-gray-700">Apellidos</label>
+                        <input type="text" id="newLastName" value={newUserFormData.lastName} onChange={e => setNewUserFormData({...newUserFormData, lastName: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#ED1C24] text-base font-medium text-white hover:bg-[#DE2D44] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ED1C24] sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                    Crear Usuario
+                  </button>
+                  <button type="button" onClick={() => setIsCreatingUser(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancelar
                   </button>
                 </div>
