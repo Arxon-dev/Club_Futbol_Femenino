@@ -21,7 +21,7 @@ const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const API_URL = `${BASE_API_URL}/events`;
 
 // Temporary hardcoded admin token for testing attendance endpoints
-const DEV_ADMIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjRkYWRhNWZhLWIzNDctNDA5Yy1hZjY2LWEyMjk1M2ZhOTM2NyIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MTcwODE4MCwiZXhwIjoxODAzMjY1NzgwfQ.u276z2WQf1VFurEyoT2wxYthu31NUPginGV067JG28w';
+const getToken = () => localStorage.getItem('token');
 
 export const eventService = {
     async getEvents(): Promise<Event[]> {
@@ -33,12 +33,30 @@ export const eventService = {
         return data.events;
     },
 
+    async updateAttendance(eventId: string, userId: string, isAttending: boolean): Promise<any> {
+        const response = await fetch(`${API_URL}/${eventId}/attendance`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ userId, isAttending })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error updating attendance');
+        }
+        
+        const data = await response.json();
+        return data.attendance;
+    },
+
     async createEvent(eventData: CreateEventDto): Promise<Event> {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token') || DEV_ADMIN_TOKEN}`
+                'Authorization': `Bearer ${getToken()}`
             },
             body: JSON.stringify(eventData)
         });
@@ -51,10 +69,22 @@ export const eventService = {
         return data.event;
     },
 
+    async removeEvent(eventId: string): Promise<void> {
+        const response = await fetch(`${API_URL}/${eventId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Error deleting event');
+        }
+    },
+
     async getEventAttendances(eventId: string): Promise<any> {
         const response = await fetch(`${API_URL}/${eventId}/attendance`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token') || DEV_ADMIN_TOKEN}`
+                'Authorization': `Bearer ${getToken()}`
             }
         });
         if (!response.ok) {

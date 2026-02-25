@@ -7,6 +7,9 @@ const { verifyToken } = require('../middleware/auth.middleware');
 // POST /api/auth/login
 router.post('/login', authController.login);
 
+// POST /api/auth/setup (Inicialización de primer Admin)
+router.post('/setup', authController.setupAdmin);
+
 // POST /api/auth/fcm-token
 router.post('/fcm-token', verifyToken, authController.updateFcmToken);
 

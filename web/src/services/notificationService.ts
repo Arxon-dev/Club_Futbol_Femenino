@@ -8,17 +8,15 @@ export interface PushNotificationDto {
 const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const API_URL = `${BASE_API_URL}/notifications`;
 
-const DEV_ADMIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjRkYWRhNWZhLWIzNDctNDA5Yy1hZjY2LWEyMjk1M2ZhOTM2NyIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MTcwODE4MCwiZXhwIjoxODAzMjY1NzgwfQ.u276z2WQf1VFurEyoT2wxYthu31NUPginGV067JG28w';
+const getToken = () => localStorage.getItem('token');
 
 export const notificationService = {
     async sendNotification(data: PushNotificationDto): Promise<any> {
-        const endpoint = data.userId ? `${API_URL}/send` : `${API_URL}/broadcast`;
-        
-        const response = await fetch(endpoint, {
+        const response = await fetch(`${API_URL}/send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token') || DEV_ADMIN_TOKEN}`
+                'Authorization': `Bearer ${getToken()}` // Temporary auth for dev
             },
             body: JSON.stringify(data)
         });

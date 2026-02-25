@@ -2,10 +2,10 @@
 const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const API_URL = `${BASE_API_URL}/finances`;
 
-const DEV_ADMIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjRkYWRhNWZhLWIzNDctNDA5Yy1hZjY2LWEyMjk1M2ZhOTM2NyIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MTcwODE4MCwiZXhwIjoxODAzMjY1NzgwfQ.u276z2WQf1VFurEyoT2wxYthu31NUPginGV067JG28w';
+const getToken = () => localStorage.getItem('token');
 const getHeaders = () => ({
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('token') || DEV_ADMIN_TOKEN}`
+    'Authorization': `Bearer ${getToken()}`
 });
 
 export interface Transaction {
