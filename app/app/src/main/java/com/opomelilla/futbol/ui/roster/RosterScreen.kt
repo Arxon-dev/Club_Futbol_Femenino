@@ -30,7 +30,7 @@ fun RosterScreen(
     val error by viewModel.error.collectAsState()
 
     val players = roster.filter { it.role == "PLAYER" }
-    val staff = roster.filter { it.role == "COACH" }
+    val staff = roster.filter { it.role in listOf("COACH", "DELEGATE", "MATERIAL_MANAGER") }
 
     Column(
         modifier = Modifier

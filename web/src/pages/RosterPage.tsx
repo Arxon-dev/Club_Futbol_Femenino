@@ -140,7 +140,7 @@ export default function RosterPage() {
   };
 
   const players = members.filter((m) => m.role === 'PLAYER');
-  const staff = members.filter((m) => m.role === 'COACH');
+  const staff = members.filter((m) => ['COACH', 'DELEGATE', 'MATERIAL_MANAGER'].includes(m.role));
 
   if (loading) {
     return (
@@ -260,6 +260,8 @@ export default function RosterPage() {
             <EliteSelect label="Rol" value={formData.role || 'PLAYER'} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
               <option value="PLAYER">Jugadora</option>
               <option value="COACH">Cuerpo Técnico</option>
+              <option value="DELEGATE">Delegado de Equipo</option>
+              <option value="MATERIAL_MANAGER">Encargado de Material</option>
             </EliteSelect>
             <EliteSelect label="Posición" value={formData.position || ''} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
               <option value="">Seleccionar...</option>

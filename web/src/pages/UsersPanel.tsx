@@ -105,6 +105,8 @@ export default function UsersPanel() {
       COACH: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
       PLAYER: 'bg-elite-secondary/15 text-elite-secondary border-elite-secondary/20',
       PARENT: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+      DELEGATE: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/20',
+      MATERIAL_MANAGER: 'bg-orange-500/15 text-orange-400 border-orange-500/20',
     };
     return colors[role] || 'bg-white/5 text-slate-400 border-white/10';
   };
@@ -253,6 +255,8 @@ export default function UsersPanel() {
             <option value="COACH">Entrenador (COACH)</option>
             <option value="ADMIN">Administrador (ADMIN)</option>
             <option value="PARENT">Familiar (PARENT)</option>
+            <option value="DELEGATE">Delegado de Equipo</option>
+            <option value="MATERIAL_MANAGER">Encargado de Material</option>
           </EliteSelect>
           <div className="grid grid-cols-2 gap-3">
             <EliteInput label="Nombre" value={newUserFormData.firstName} onChange={(e) => setNewUserFormData({ ...newUserFormData, firstName: e.target.value })} />
