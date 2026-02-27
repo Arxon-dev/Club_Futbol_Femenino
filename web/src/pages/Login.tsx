@@ -36,7 +36,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center">
           <img
-            className="mx-auto h-20 w-20 object-contain rounded-2xl bg-white/5 p-2"
+            className="mx-auto h-20 w-20 object-contain"
             src="/logo.png"
             alt="Logo Torreblanca Melilla CF"
           />

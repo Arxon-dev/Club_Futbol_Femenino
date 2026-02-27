@@ -58,7 +58,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <img
             src="/logo.png"
             alt="Logo"
-            className="h-10 w-10 rounded-lg object-contain bg-white/5 p-1"
+            className="h-10 w-10 object-contain"
           />
           <div className="min-w-0">
             <h1 className="text-sm font-bold text-white font-heading truncate leading-tight">TORREBLANCA</h1>
