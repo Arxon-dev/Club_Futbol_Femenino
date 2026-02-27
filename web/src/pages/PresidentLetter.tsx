@@ -1,168 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import { presidentLetterService, PresidentLetter } from '../services/presidentLetterService';
+import { useEffect, useState } from 'react';
+import { presidentLetterService } from '../services/presidentLetterService';
 import { authService } from '../services/authService';
-import { FileText, Edit2, Save, X, AlertCircle } from 'lucide-react';
+import { FileText, Edit2, Save, X, Loader2 } from 'lucide-react';
+import PageHeader from '../components/ui/PageHeader';
+import EliteCard from '../components/ui/EliteCard';
+import EliteButton from '../components/ui/EliteButton';
+import { EliteInput } from '../components/ui/EliteInput';
 
-const PresidentLetterPage: React.FC = () => {
-  const [letter, setLetter] = useState<PresidentLetter | null>(null);
+export default function PresidentLetterPage() {
+  const [letter, setLetter] = useState<{ title: string; content: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editContent, setEditContent] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [draftTitle, setDraftTitle] = useState('');
+  const [draftContent, setDraftContent] = useState('');
   const [saving, setSaving] = useState(false);
-  
   const user = authService.getCurrentUser();
   const isAdmin = user?.role === 'ADMIN';
 
-  useEffect(() => {
-    fetchLetter();
-  }, []);
+  useEffect(() => { fetchLetter(); }, []);
 
   const fetchLetter = async () => {
     try {
-      setLoading(true);
       const data = await presidentLetterService.getLetter();
       setLetter(data);
-      setEditTitle(data.title);
-      setEditContent(data.content);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar la carta del presidente.');
+      setDraftTitle(data?.title || '');
+      setDraftContent(data?.content || '');
+    } catch {
+      setLetter(null);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    setSaving(true);
     try {
-      setSaving(true);
-      const updatedLetter = await presidentLetterService.updateLetter(editTitle, editContent);
-      setLetter(updatedLetter);
-      setIsEditing(false);
-      setError(null);
+      const updated = await presidentLetterService.updateLetter(draftTitle, draftContent);
+      setLetter(updated);
+      setEditing(false);
     } catch (err: any) {
-      setError(err.message || 'Error al guardar los cambios.');
+      alert('Error al guardar: ' + err.message);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleCancel = () => {
-    if (letter) {
-      setEditTitle(letter.title);
-      setEditContent(letter.content);
-    }
-    setIsEditing(false);
-    setError(null);
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-elite-primary border-t-transparent"></div>
+        <Loader2 className="w-8 h-8 animate-spin text-elite-primary" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-2 font-heading">Carta del Presidente</h1>
-          <p className="text-slate-400">Mensaje oficial de la presidencia del club.</p>
-        </div>
-        {isAdmin && !isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-elite-primary text-white hover:bg-elite-primary/80 rounded-xl font-medium transition-all shadow-lg shadow-elite-primary/25"
-          >
-            <Edit2 className="w-4 h-4" />
-            Editar Carta
-          </button>
-        )}
-      </div>
+    <div className="max-w-3xl mx-auto animate-slide-up">
+      <PageHeader
+        title="Carta del Presidente"
+        subtitle="Mensaje oficial del presidente del club."
+        actions={
+          isAdmin && !editing ? (
+            <EliteButton icon={<Edit2 className="w-4 h-4" />} onClick={() => setEditing(true)}>
+              Editar Carta
+            </EliteButton>
+          ) : undefined
+        }
+      />
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <p>{error}</p>
+      <EliteCard>
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
+          <div className="w-10 h-10 rounded-xl bg-elite-primary/15 flex items-center justify-center text-elite-primary-hover">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-white font-heading">Mensaje del Presidente</h3>
+            <p className="text-xs text-slate-500">Club de Fútbol Femenino Torreblanca</p>
+          </div>
         </div>
-      )}
 
-      {/* Main Card */}
-      <div className="bg-elite-surface rounded-2xl border border-white/10 p-8 shadow-xl">
-        {isEditing ? (
-          <div className="space-y-6">
+        {editing ? (
+          <div className="space-y-4">
+            <EliteInput
+              label="Título"
+              value={draftTitle}
+              onChange={(e) => setDraftTitle(e.target.value)}
+              placeholder="Título de la carta..."
+            />
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Título</label>
-              <input
-                type="text"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full bg-elite-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-elite-primary focus:border-transparent transition-all placeholder-slate-500"
-                placeholder="Título de la carta"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Contenido</label>
+              <label className="block text-sm font-medium text-slate-400 mb-1.5">Contenido</label>
               <textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                rows={15}
-                className="w-full bg-elite-bg border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-elite-primary focus:border-transparent transition-all placeholder-slate-500 resize-y leading-relaxed"
-                placeholder="Escribe el contenido de la carta aquí..."
+                className="w-full bg-elite-bg/80 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-elite-primary/60 focus:border-elite-primary/40 transition-all text-sm leading-relaxed resize-y"
+                rows={12}
+                value={draftContent}
+                onChange={(e) => setDraftContent(e.target.value)}
+                placeholder="Escribe el mensaje del presidente aquí..."
               />
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-              <button
-                onClick={handleCancel}
-                disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
-              >
-                <X className="w-4 h-4" />
+            <div className="flex justify-end gap-2">
+              <EliteButton variant="ghost" onClick={() => { setEditing(false); setDraftTitle(letter?.title || ''); setDraftContent(letter?.content || ''); }} icon={<X className="w-4 h-4" />}>
                 Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || !editTitle.trim() || !editContent.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Save className="w-5 h-5" />
-                )}
-                {saving ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
+              </EliteButton>
+              <EliteButton onClick={handleSave} loading={saving} icon={!saving ? <Save className="w-4 h-4" /> : undefined}>
+                Guardar
+              </EliteButton>
             </div>
           </div>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold mb-6 text-white text-center font-heading flex items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-elite-primary/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-elite-primary" />
+            {letter?.content ? (
+              <div>
+                {letter.title && <h2 className="text-xl font-bold text-white font-heading mb-4">{letter.title}</h2>}
+                <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{letter.content}</p>
               </div>
-              {letter?.title || 'Sin título'}
-            </h2>
-            <div className="whitespace-pre-wrap text-slate-300 leading-relaxed text-lg mb-8 text-center sm:text-left">
-              {letter?.content || 'No hay contenido disponible.'}
-            </div>
-            {letter?.updatedAt && (
-              <div className="text-right text-sm text-slate-500 italic mt-8 pt-6 border-t border-white/5">
-                Última actualización: {new Date(letter.updatedAt).toLocaleDateString('es-ES', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+            ) : (
+              <div className="text-center py-10">
+                <FileText className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                <p className="text-slate-500 text-sm">No hay carta publicada todavía.</p>
+                {isAdmin && (
+                  <EliteButton className="mt-4" size="sm" onClick={() => setEditing(true)}>
+                    Escribir Carta
+                  </EliteButton>
+                )}
               </div>
             )}
           </div>
         )}
-      </div>
+      </EliteCard>
     </div>
   );
-};
-
-export default PresidentLetterPage;
+}

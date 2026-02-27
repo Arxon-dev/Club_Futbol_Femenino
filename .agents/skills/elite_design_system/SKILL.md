@@ -3,73 +3,172 @@ name: Elite Design System - Fútbol Femenino
 description: Sistema de diseño premium y de élite para las aplicaciones (Web y Android) del Club de Fútbol Femenino. Define paletas de colores vibrantes, tipografía moderna, y estilos de componentes para lograr un acabado profesional y "Wow factor".
 ---
 
-# Elite Design System - Club de Fútbol Femenino
+# Elite Design System — Club de Fútbol Femenino
 
-Este documento establece las bases de diseño visual y de experiencia de usuario (UX/UI) para garantizar un aspecto moderno, enérgico, premium y consistente en todas las plataformas (React Web y Android Compose).
+Este documento establece las bases de diseño visual y de UX/UI. Transmite **velocidad, élite, profesionalidad y energía**. Deportivo pero Premium, con micro-interacciones y glassmorphism sutil.
 
-## 1. Filosofía y "Vibe"
+## 1. Paleta de Colores
 
-El diseño debe transmitir **velocidad, élite, profesionalidad y energía**. Alejarse de los colores planos corporativos aburridos.
+| Token Tailwind            | Hex       | Uso                                       |
+| ------------------------- | --------- | ----------------------------------------- |
+| `elite-bg`                | `#0F172A` | Fondo principal de la app                 |
+| `elite-surface`           | `#1E293B` | Cards, sidebar, modales                   |
+| `elite-primary`           | `#6D28D9` | Botones primarios, links activos, acentos |
+| `elite-primary-hover`     | `#7C3AED` | Hover de botones primarios                |
+| `elite-secondary`         | `#06B6D4` | CTAs secundarios, iconos de acción        |
+| `elite-accent`            | `#F43F5E` | Errores, alertas, botones destructivos    |
+| `text-white` / `slate-50` | `#F8FAFC` | Texto principal                           |
+| `text-slate-400`          | `#94A3B8` | Texto secundario, labels                  |
+| `text-slate-500`          | `#64748B` | Texto terciario, placeholders             |
 
-- **Deportivo pero Premium**: Uso de fondos oscuros profundos (no negro puro) con acentos de color neón/vibrantes.
-- **Micro-interacciones**: La aplicación debe sentirse viva. Efectos hover suaves, transiciones fluidas, animaciones al pulsar botones.
-- **Glassmorphism**: Componentes con fondos semitransparentes y desenfoque (blur) superpuestos sobre fondos texturizados o gradientes.
+### ❌ NO USAR
 
-## 2. Paleta de Colores (Los "Elite Colors")
+- `bg-white`, `bg-gray-50`, `bg-gray-100` (rompen el dark theme)
+- `text-gray-900`, `text-gray-700`, `text-gray-500` (invisibles en dark)
+- `text-indigo-*`, `bg-indigo-*` (fuera de paleta)
+- `#ED1C24` o cualquier rojo hardcodeado (usar `elite-accent`)
+- `border-gray-200`, `border-gray-300` (usar `border-white/5` o `border-white/10`)
 
-### 2.1 Tema Oscuro (Recomendado por defecto para apps deportivas)
+## 2. Tipografía
 
-- **Background**: `#0F172A` (Slate 900) - Azul marino muy oscuro, elegante.
-- **Surface (Cards, Modals)**: `#1E293B` (Slate 800) - Ligeramente más claro para separar del fondo.
-- **Primary**: `#8B5CF6` (Violet 500) a `#6D28D9` (Violet 700) - Identidad fuerte, premium, femenina y poderosa.
-- **Secondary (Accents/Action)**: `#06B6D4` (Cyan 500) - Contraste vibrante y eléctrico para llamadas a la acción (CTAs).
-- **Tertiary / Alerts**: `#F43F5E` (Rose 500) - Para notificaciones, errores o acentos intensos.
-- **Text Primary**: `#F8FAFC` (Slate 50) - Blanco roto para legibilidad.
-- **Text Secondary**: `#94A3B8` (Slate 400) - Gris azulado para textos secundarios.
+- **Headings**: `font-heading` (Outfit) — `text-white`, `font-bold`, `tracking-tight`
+- **Body**: `font-sans` (Inter) — `text-slate-300` o `text-slate-400`
+- **Labels**: `text-sm font-medium text-slate-400`
+- **Captions**: `text-xs text-slate-500`
 
-### 2.2 Tema Claro
+## 3. Componentes Reutilizables
 
-- **Background**: `#F8FAFC` (Slate 50)
-- **Surface**: `#FFFFFF`
-- **Primary**: `#6D28D9` (Violet 700)
-- **Secondary**: `#0891B2` (Cyan 600)
-- **Text Primary**: `#0F172A`
-- **Text Secondary**: `#475569`
+### Layout (`components/layout/Layout.tsx`)
 
-## 3. Tipografía (Google Fonts)
+```tsx
+import Layout from "./components/layout/Layout";
+// Envuelve TODA la app (App.tsx lo aplica automáticamente)
+```
 
-- **Titulares y Destacados (Headers)**: `Outfit` (Tipografía geométrica, moderna, altamente legible e ideal para branding deportivo y tecnológico).
-- **Cuerpo de Texto y UI (Body)**: `Inter` o `Roboto` (Tipografía neutra, perfecta para lectura de datos, tablas y listas).
+- Sidebar con nav items, indicador activo (barra violeta izquierda)
+- Responsive: hamburger en mobile, sidebar fija en desktop
 
-## 4. Estilo de Componentes
+### PageHeader (`components/ui/PageHeader.tsx`)
 
-### Botones
+```tsx
+<PageHeader
+  title="Dashboard"
+  subtitle="Resumen financiero."
+  actions={<EliteButton>Acción</EliteButton>}
+/>
+```
 
-- Bordes redondeados modernos: `12px` (o `rounded-xl` en Tailwind).
-- Botones primarios: Gradiente sutil (ej. de Violet 500 a Violet 600) con texto en blanco. Efecto _glow_ (sombra difuminada del mismo color del botón) al hacer hover o enfocar.
+### EliteCard (`components/ui/EliteCard.tsx`)
 
-### Tarjetas (Cards)
+```tsx
+<EliteCard>Contenido</EliteCard>
+<EliteCard padding="p-0">Para tablas sin padding</EliteCard>
+```
 
-- Radios más amplios: `16px` o `24px` (`rounded-2xl`).
-- En tema oscuro: Borde sutil transparente (ej. `border-white/10`) para destacar sobre el fondo `Slate 900`.
-- Sombra: Suave (`shadow-lg` o `shadow-xl` de Tailwind) adaptada al color de fondo para dar profundidad.
+Genera: `bg-elite-surface border border-white/[0.06] rounded-2xl`
 
-### Inputs / Formularios
+### EliteButton (`components/ui/EliteButton.tsx`)
 
-- Estilo "Filled" o fondo semi-transparente en dark mode (`bg-slate-800/50`).
-- Anillos de enfoque (Focus Rings) prominentes en color Secondary (Cyan) o Primary (Violet).
+```tsx
+<EliteButton variant="primary" icon={<Plus />}>Crear</EliteButton>
+<EliteButton variant="secondary">Editar</EliteButton>
+<EliteButton variant="danger">Eliminar</EliteButton>
+<EliteButton variant="ghost">Cancelar</EliteButton>
+<EliteButton loading>Guardando...</EliteButton>
+```
 
-## 5. Implementación en Plataformas
+### EliteInput, EliteTextarea, EliteSelect (`components/ui/EliteInput.tsx`)
 
-### 5.1 Web (React + Tailwind CSS)
+```tsx
+<EliteInput label="Nombre" value={val} onChange={...} />
+<EliteTextarea label="Notas" rows={3} />
+<EliteSelect label="Rol"><option>ADMIN</option></EliteSelect>
+```
 
-- Extender `tailwind.config.js` para añadir estos colores de marca bajo el bloque `theme.extend.colors`.
-- Añadir directiva `@import url(...)` en `index.css` para cargar `Outfit` e `Inter`.
-- Crear utilidades CSS personalizadas en `index.css` si se necesitan gradientes complejos o animaciones (ej. `animate-fade-in-up`).
+Genera: `bg-elite-bg/80 border-white/10 rounded-xl focus:ring-elite-primary/60`
 
-### 5.2 Android (Jetpack Compose)
+### EliteModal (`components/ui/EliteModal.tsx`)
 
-- Actualizar `ui/theme/Color.kt` con las constantes exactas de los colores mencionados.
-- Actualizar `ui/theme/Theme.kt` para usar nuestras paletas en `DarkColorScheme` y `LightColorScheme`.
-- **Desactivar Dynamic Colors** o hacer que nuestra paleta tenga prioridad total para asegurar el _Look & Feel_ élite, ya que los colores extraídos del fondo de pantalla del usuario podrían romper el diseño deportivo.
-- Descargar e integrar los Downloadable Fonts de `Outfit` en `ui/theme/Type.kt`.
+```tsx
+<EliteModal isOpen={open} onClose={close} title="Título">
+  <form>...</form>
+</EliteModal>
+```
+
+Genera: backdrop-blur + slide-up animation
+
+### EliteTable (`components/ui/EliteTable.tsx`)
+
+```tsx
+<EliteTable
+  columns={[{ key: "name", header: "Nombre", render: (item) => item.name }]}
+  data={items}
+  keyExtractor={(i) => i.id}
+/>
+```
+
+## 4. Recetas Comunes
+
+### Stat Cards (Dashboard / Treasury)
+
+```tsx
+<EliteCard className="flex items-center gap-4">
+  <div className="w-11 h-11 rounded-xl bg-elite-primary/15 text-elite-primary-hover flex items-center justify-center">
+    <Icon />
+  </div>
+  <div>
+    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+      Label
+    </p>
+    <p className="text-xl font-bold text-emerald-400">+1,200€</p>
+  </div>
+</EliteCard>
+```
+
+### Role Badges
+
+```tsx
+const roleBadge = {
+  ADMIN: "bg-elite-accent/15 text-elite-accent border-elite-accent/20",
+  COACH: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+  PLAYER:
+    "bg-elite-secondary/15 text-elite-secondary border-elite-secondary/20",
+};
+<span
+  className={`px-2 py-0.5 text-xs font-medium rounded-full border ${roleBadge[role]}`}
+>
+  {role}
+</span>;
+```
+
+### Loading Spinner
+
+```tsx
+<div className="flex justify-center items-center min-h-[60vh]">
+  <Loader2 className="w-8 h-8 animate-spin text-elite-primary" />
+</div>
+```
+
+### Error Alert
+
+```tsx
+<div className="bg-elite-accent/10 border border-elite-accent/20 text-elite-accent p-3 rounded-xl text-sm">
+  {error}
+</div>
+```
+
+### Empty State
+
+```tsx
+<EliteCard className="text-center py-16">
+  <Icon className="w-14 h-14 text-slate-700 mx-auto mb-4" />
+  <p className="text-slate-500">No hay datos.</p>
+</EliteCard>
+```
+
+## 5. Android (Jetpack Compose)
+
+- Actualizar `ui/theme/Color.kt` con los mismos hex.
+- `DarkColorScheme` con `primary = Violet700`, `background = Slate900`, `surface = Slate800`.
+- **Desactivar Dynamic Colors** — nuestra paleta tiene prioridad total.
+- Fuente `Outfit` para headings, `Inter` para body.

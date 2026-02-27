@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Loader2, X, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { financeService, Transaction } from '../../services/financeService';
+import EliteModal from '../ui/EliteModal';
+import EliteButton from '../ui/EliteButton';
+import { EliteInput, EliteSelect } from '../ui/EliteInput';
 
 interface TransactionModalProps {
     isOpen: boolean;
@@ -19,7 +22,6 @@ export const TransactionModal = ({ isOpen, onClose, onSaved, transaction, users 
     const [description, setDescription] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [userId, setUserId] = useState<string>('');
-    
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -47,17 +49,8 @@ export const TransactionModal = ({ isOpen, onClose, onSaved, transaction, users 
         e.preventDefault();
         setLoading(true);
         setError('');
-
         try {
-            const data = {
-                type,
-                category,
-                amount: parseFloat(amount),
-                description,
-                date,
-                userId: userId || undefined
-            };
-
+            const data = { type, category, amount: parseFloat(amount), description, date, userId: userId || undefined };
             if (transaction) {
                 await financeService.updateTransaction(transaction.id, data);
             } else {
@@ -66,153 +59,70 @@ export const TransactionModal = ({ isOpen, onClose, onSaved, transaction, users 
             onSaved();
             onClose();
         } catch (err: any) {
-            setError(err.message || 'Failed to save transaction');
+            setError(err.message || 'Error al guardar');
         } finally {
             setLoading(false);
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-xl outline-none">
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        {transaction ? 'Editar Transacción' : 'Añadir Transacción'}
-                    </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 focus:outline-none">
-                        <X className="w-6 h-6" />
+        <EliteModal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={transaction ? 'Editar Transacción' : 'Añadir Transacción'}
+            maxWidth="max-w-md"
+        >
+            {error && (
+                <div className="mb-4 bg-elite-accent/10 text-elite-accent p-3 rounded-xl flex items-start text-sm border border-elite-accent/20">
+                    <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Type Toggle */}
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setType('INCOME')}
+                        className={`flex-1 text-center py-2 rounded-xl text-sm font-medium transition-all ${type === 'INCOME' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-white/5 text-slate-500 border border-transparent'}`}
+                    >
+                        Ingreso
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setType('EXPENSE')}
+                        className={`flex-1 text-center py-2 rounded-xl text-sm font-medium transition-all ${type === 'EXPENSE' ? 'bg-elite-accent/15 text-elite-accent border border-elite-accent/30' : 'bg-white/5 text-slate-500 border border-transparent'}`}
+                    >
+                        Gasto
                     </button>
                 </div>
 
-                <div className="p-5">
-                    {error && (
-                        <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-md flex items-start text-sm">
-                            <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-                            <span>{error}</span>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="flex gap-4 mb-4">
-                            <label className="flex items-center flex-1 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="type"
-                                    value="INCOME"
-                                    checked={type === 'INCOME'}
-                                    onChange={() => setType('INCOME')}
-                                    className="sr-only"
-                                />
-                                <div className={`flex-1 text-center py-2 rounded-md font-medium text-sm transition-colors ${type === 'INCOME' ? 'bg-green-100 text-green-700 border-2 border-green-500' : 'bg-gray-100 text-gray-600 border-2 border-transparent'}`}>
-                                    Ingreso
-                                </div>
-                            </label>
-                            <label className="flex items-center flex-1 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="type"
-                                    value="EXPENSE"
-                                    checked={type === 'EXPENSE'}
-                                    onChange={() => setType('EXPENSE')}
-                                    className="sr-only"
-                                />
-                                <div className={`flex-1 text-center py-2 rounded-md font-medium text-sm transition-colors ${type === 'EXPENSE' ? 'bg-red-100 text-red-700 border-2 border-red-500' : 'bg-gray-100 text-gray-600 border-2 border-transparent'}`}>
-                                    Gasto
-                                </div>
-                            </label>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Importe (€)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                                    required
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
-                                <input
-                                    type="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                            <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                                required
-                            >
-                                {CATEGORIES.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Asignar a Jugador (Opcional)</label>
-                            <select
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                            >
-                                <option value="">-- Ninguno (Gasto/Ingreso General) --</option>
-                                {users?.map(user => (
-                                    <option key={user.id} value={user.id}>
-                                        {user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName}` : user.email}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Concepto / Descripción</label>
-                            <input
-                                type="text"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                                required
-                                placeholder="Ej: Cuota Anual 2026, Compra de balones..."
-                            />
-                        </div>
-
-                        <div className="pt-4 flex justify-end space-x-3">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                disabled={loading}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-75 disabled:cursor-not-allowed"
-                            >
-                                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                Guardar
-                            </button>
-                        </div>
-                    </form>
+                <div className="grid grid-cols-2 gap-3">
+                    <EliteInput label="Importe (€)" type="number" step="0.01" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required placeholder="0.00" />
+                    <EliteInput label="Fecha" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
                 </div>
-            </div>
-        </div>
+
+                <EliteSelect label="Categoría" value={category} onChange={(e) => setCategory(e.target.value)} required>
+                    {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </EliteSelect>
+
+                <EliteSelect label="Asignar a Jugador (Opcional)" value={userId} onChange={(e) => setUserId(e.target.value)}>
+                    <option value="">-- Ninguno (General) --</option>
+                    {users?.map(user => (
+                        <option key={user.id} value={user.id}>
+                            {user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName}` : user.email}
+                        </option>
+                    ))}
+                </EliteSelect>
+
+                <EliteInput label="Concepto" type="text" value={description} onChange={(e) => setDescription(e.target.value)} required placeholder="Ej: Cuota Anual 2026" />
+
+                <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
+                    <EliteButton type="button" variant="ghost" onClick={onClose} disabled={loading}>Cancelar</EliteButton>
+                    <EliteButton type="submit" loading={loading}>Guardar</EliteButton>
+                </div>
+            </form>
+        </EliteModal>
     );
 };

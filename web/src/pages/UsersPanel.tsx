@@ -1,57 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { userService, UserDto, ProfileDto } from '../services/userService';
+import { userService } from '../services/userService';
+import { Plus, Loader2, UserCircle } from 'lucide-react';
+import PageHeader from '../components/ui/PageHeader';
+import EliteCard from '../components/ui/EliteCard';
+import EliteButton from '../components/ui/EliteButton';
+import EliteTable from '../components/ui/EliteTable';
+import EliteModal from '../components/ui/EliteModal';
+import { EliteInput, EliteSelect, EliteTextarea } from '../components/ui/EliteInput';
+
+interface UserProfile {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  birthdate?: string;
+  position?: string;
+  dorsal?: number;
+  clothingSize?: string;
+  medicalInfo?: string;
+}
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  profile?: UserProfile;
+}
 
 export default function UsersPanel() {
-  const [users, setUsers] = useState<UserDto[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [editingUser, setEditingUser] = useState<UserDto | null>(null);
-
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
-  const [newUserFormData, setNewUserFormData] = useState({
-    email: '',
-    password: '',
-    role: 'PLAYER',
-    firstName: '',
-    lastName: ''
-  });
 
-  // Form state
-  const [formData, setFormData] = useState<ProfileDto>({});
+  const [formData, setFormData] = useState<UserProfile>({});
+  const [newUserFormData, setNewUserFormData] = useState({ email: '', password: '', role: 'PLAYER', firstName: '', lastName: '' });
 
-  const fetchUsers = async () => {
+  useEffect(() => { loadUsers(); }, []);
+
+  const loadUsers = async () => {
     try {
       setLoading(true);
       const data = await userService.getUsers();
       setUsers(data);
-    } catch (err: any) {
-      setError(err.message || 'Error fetching users');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) { setError(err.message); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const openEditor = (user: UserDto) => {
+  const openEditor = (user: User) => {
     setEditingUser(user);
     setFormData({
-      firstName: user.profile?.firstName || '',
-      lastName: user.profile?.lastName || '',
-      phone: user.profile?.phone || '',
-      clothingSize: user.profile?.clothingSize || '',
-      dorsal: user.profile?.dorsal || undefined,
-      position: user.profile?.position || '',
-      birthdate: user.profile?.birthdate || '',
-      medicalInfo: user.profile?.medicalInfo || '',
+      firstName: user.profile?.firstName || '', lastName: user.profile?.lastName || '',
+      phone: user.profile?.phone || '', birthdate: user.profile?.birthdate || '',
+      position: user.profile?.position || '', dorsal: user.profile?.dorsal,
+      clothingSize: user.profile?.clothingSize || '', medicalInfo: user.profile?.medicalInfo || '',
     });
-  };
-
-  const closeEditor = () => {
-    setEditingUser(null);
-    setFormData({});
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -59,256 +62,170 @@ export default function UsersPanel() {
     if (!editingUser) return;
     try {
       await userService.updateProfile(editingUser.id, formData);
-      await fetchUsers();
-      closeEditor();
-    } catch (err: any) {
-      alert(err.message || 'Error saving profile');
-    }
+      setEditingUser(null);
+      await loadUsers();
+    } catch (err: any) { alert('Error al guardar: ' + err.message); }
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await userService.createUser(newUserFormData);
-      await fetchUsers();
       setIsCreatingUser(false);
       setNewUserFormData({ email: '', password: '', role: 'PLAYER', firstName: '', lastName: '' });
-      alert("Usuario creado exitosamente");
-    } catch (err: any) {
-      alert(err.message || 'Error creating user');
-    }
+      await loadUsers();
+    } catch (err: any) { alert('Error: ' + err.message); }
   };
 
-  if (loading) return <div className="p-4">Cargando directorio...</div>;
-  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  const roleBadge = (role: string) => {
+    const colors: Record<string, string> = {
+      ADMIN: 'bg-elite-accent/15 text-elite-accent border-elite-accent/20',
+      COACH: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+      PLAYER: 'bg-elite-secondary/15 text-elite-secondary border-elite-secondary/20',
+      PARENT: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+    };
+    return colors[role] || 'bg-white/5 text-slate-400 border-white/10';
+  };
+
+  const columns = [
+    {
+      key: 'name',
+      header: 'Usuario',
+      render: (user: User) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-elite-primary/15 flex items-center justify-center text-elite-primary-hover flex-shrink-0">
+            <UserCircle className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-white font-medium truncate">
+              {user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName || ''}` : 'Sin nombre'}
+            </p>
+            <p className="text-xs text-slate-500 truncate">{user.email}</p>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'position',
+      header: 'Posición / Dorsal',
+      render: (user: User) => (
+        <div>
+          <p className="text-slate-300">{user.profile?.position || '-'}</p>
+          <p className="text-xs text-slate-500">{user.profile?.dorsal ? `#${user.profile.dorsal}` : ''}</p>
+        </div>
+      )
+    },
+    {
+      key: 'phone',
+      header: 'Contacto',
+      render: (user: User) => <span className="text-slate-400">{user.profile?.phone || '-'}</span>
+    },
+    {
+      key: 'role',
+      header: 'Rol',
+      render: (user: User) => (
+        <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${roleBadge(user.role)}`}>
+          {user.role}
+        </span>
+      )
+    },
+    {
+      key: 'actions',
+      header: '',
+      className: 'text-right',
+      render: (user: User) => (
+        <button
+          onClick={() => openEditor(user)}
+          className="text-sm text-elite-secondary hover:text-elite-secondary/80 font-medium transition-colors"
+        >
+          Editar
+        </button>
+      )
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-elite-primary" />
+      </div>
+    );
+  }
+
+  if (error) return <div className="p-4 text-elite-accent">{error}</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 shadow rounded-lg flex justify-between items-center">
-        <div>
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Directorio de Jugadoras y Staff</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Gestiona los perfiles, fichas médicas y deportivas de todos los miembros del club.
-          </p>
-        </div>
-        <button
-          onClick={() => setIsCreatingUser(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#ED1C24] hover:bg-[#DE2D44] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ED1C24] transition-colors duration-200"
-        >
-          Añadir Usuario
-        </button>
-      </div>
+    <div className="space-y-6 animate-slide-up">
+      <PageHeader
+        title="Directorio"
+        subtitle="Gestión de jugadoras, cuerpo técnico y staff del club."
+        actions={
+          <EliteButton icon={<Plus className="w-4 h-4" />} onClick={() => setIsCreatingUser(true)}>
+            Añadir Usuario
+          </EliteButton>
+        }
+      />
 
-      <div className="flex flex-col">
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Usuario
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Posición / Dorsal
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contacto
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rol
-                    </th>
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">Edit</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName || ''}` : 'Sin nombre configurado'}
-                            </div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{user.profile?.position || '-'}</div>
-                        <div className="text-sm text-gray-500">{user.profile?.dorsal ? `#${user.profile.dorsal}` : ''}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{user.profile?.phone || '-'}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-100 text-red-800' : user.role === 'COACH' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => openEditor(user)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          Editar Perfil
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <EliteCard padding="p-0">
+        <EliteTable columns={columns} data={users} keyExtractor={(u) => u.id} emptyMessage="No hay usuarios registrados." />
+      </EliteCard>
+
+      {/* Edit Profile Modal */}
+      <EliteModal isOpen={!!editingUser} onClose={() => setEditingUser(null)} title={`Editar Perfil — ${editingUser?.email || ''}`} maxWidth="max-w-xl">
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <EliteInput label="Nombre" value={formData.firstName || ''} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
+            <EliteInput label="Apellidos" value={formData.lastName || ''} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
           </div>
-        </div>
-      </div>
-
-      {editingUser && (
-        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={closeEditor}></div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-              <form onSubmit={handleSave}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
-                    Editar Perfil - {editingUser.email}
-                  </h3>
-                  <div className="grid grid-cols-6 gap-6">
-                    
-                    <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">Nombre</label>
-                      <input type="text" name="firstName" id="firstName" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className="mt-1 flex-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Apellidos</label>
-                      <input type="text" name="lastName" id="lastName" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className="mt-1 flex-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Teléfono</label>
-                      <input type="text" name="phone" id="phone" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="mt-1 flex-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-                      <input type="date" name="birthdate" id="birthdate" value={formData.birthdate} onChange={e => setFormData({...formData, birthdate: e.target.value})} className="mt-1 flex-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-2">
-                      <label htmlFor="position" className="block text-sm font-medium text-gray-700">Posición</label>
-                      <select id="position" name="position" value={formData.position} onChange={e => setFormData({...formData, position: e.target.value})} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="">Seleccionar...</option>
-                        <option value="Portera">Portera</option>
-                        <option value="Cierre">Cierre</option>
-                        <option value="Ala">Ala</option>
-                        <option value="Pívot">Pívot</option>
-                        <option value="Universal">Universal</option>
-                      </select>
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-2">
-                      <label htmlFor="dorsal" className="block text-sm font-medium text-gray-700">Dorsal</label>
-                      <input type="number" name="dorsal" id="dorsal" value={formData.dorsal || ''} onChange={e => setFormData({...formData, dorsal: parseInt(e.target.value) || undefined})} className="mt-1 flex-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-2">
-                      <label htmlFor="clothingSize" className="block text-sm font-medium text-gray-700">Talla Ropa</label>
-                      <select id="clothingSize" name="clothingSize" value={formData.clothingSize} onChange={e => setFormData({...formData, clothingSize: e.target.value})} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="">Seleccionar...</option>
-                        <option value="XS">XS</option>
-                        <option value="S">S</option>
-                        <option value="M">M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        <option value="XXL">XXL</option>
-                      </select>
-                    </div>
-
-                    <div className="col-span-6">
-                      <label htmlFor="medicalInfo" className="block text-sm font-medium text-gray-700">Información Médica / Alergias</label>
-                      <textarea id="medicalInfo" name="medicalInfo" rows={3} value={formData.medicalInfo} onChange={e => setFormData({...formData, medicalInfo: e.target.value})} className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md" placeholder="Alergias, medicamentos, lesiones..."></textarea>
-                    </div>
-
-                  </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                    Guardar
-                  </button>
-                  <button type="button" onClick={closeEditor} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <EliteInput label="Teléfono" value={formData.phone || ''} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+            <EliteInput label="Fecha de Nacimiento" type="date" value={formData.birthdate || ''} onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })} />
           </div>
-        </div>
-      )}
-
-      {/* CREATE USER MODAL */}
-      {isCreatingUser && (
-        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title-create" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setIsCreatingUser(false)}></div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-              <form onSubmit={handleCreateUser}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title-create">
-                    Añadir Nuevo Usuario
-                  </h3>
-                  <div className="space-y-4">
-                    
-                    <div>
-                      <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700">Email *</label>
-                      <input required type="email" id="newEmail" value={newUserFormData.email} onChange={e => setNewUserFormData({...newUserFormData, email: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    </div>
-
-                    <div>
-                      <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">Contraseña Inicial *</label>
-                      <input required type="password" id="newPassword" value={newUserFormData.password} onChange={e => setNewUserFormData({...newUserFormData, password: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    </div>
-
-                    <div>
-                      <label htmlFor="newRole" className="block text-sm font-medium text-gray-700">Rol *</label>
-                      <select id="newRole" value={newUserFormData.role} onChange={e => setNewUserFormData({...newUserFormData, role: e.target.value})} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="PLAYER">Jugadora (PLAYER)</option>
-                        <option value="COACH">Entrenador (COACH)</option>
-                        <option value="ADMIN">Administrador (ADMIN)</option>
-                        <option value="PARENT">Familiar (PARENT)</option>
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="newFirstName" className="block text-sm font-medium text-gray-700">Nombre</label>
-                        <input type="text" id="newFirstName" value={newUserFormData.firstName} onChange={e => setNewUserFormData({...newUserFormData, firstName: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                      </div>
-                      <div>
-                        <label htmlFor="newLastName" className="block text-sm font-medium text-gray-700">Apellidos</label>
-                        <input type="text" id="newLastName" value={newUserFormData.lastName} onChange={e => setNewUserFormData({...newUserFormData, lastName: e.target.value})} className="mt-1 block w-full rounded-md sm:text-sm border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#ED1C24] text-base font-medium text-white hover:bg-[#DE2D44] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ED1C24] sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
-                    Crear Usuario
-                  </button>
-                  <button type="button" onClick={() => setIsCreatingUser(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            </div>
+          <div className="grid grid-cols-3 gap-3">
+            <EliteSelect label="Posición" value={formData.position || ''} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
+              <option value="">Seleccionar...</option>
+              <option value="Portera">Portera</option>
+              <option value="Cierre">Cierre</option>
+              <option value="Ala">Ala</option>
+              <option value="Pívot">Pívot</option>
+              <option value="Universal">Universal</option>
+            </EliteSelect>
+            <EliteInput label="Dorsal" type="number" value={formData.dorsal || ''} onChange={(e) => setFormData({ ...formData, dorsal: parseInt(e.target.value) || undefined })} />
+            <EliteSelect label="Talla Ropa" value={formData.clothingSize || ''} onChange={(e) => setFormData({ ...formData, clothingSize: e.target.value })}>
+              <option value="">Seleccionar...</option>
+              <option value="XS">XS</option><option value="S">S</option><option value="M">M</option>
+              <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+            </EliteSelect>
           </div>
-        </div>
-      )}
+          <EliteTextarea label="Información Médica / Alergias" rows={3} value={formData.medicalInfo || ''} onChange={(e) => setFormData({ ...formData, medicalInfo: e.target.value })} placeholder="Alergias, medicamentos, lesiones..." />
+          <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
+            <EliteButton type="button" variant="ghost" onClick={() => setEditingUser(null)}>Cancelar</EliteButton>
+            <EliteButton type="submit">Guardar</EliteButton>
+          </div>
+        </form>
+      </EliteModal>
+
+      {/* Create User Modal */}
+      <EliteModal isOpen={isCreatingUser} onClose={() => setIsCreatingUser(false)} title="Añadir Nuevo Usuario" maxWidth="max-w-md">
+        <form onSubmit={handleCreateUser} className="space-y-4">
+          <EliteInput label="Email *" type="email" required value={newUserFormData.email} onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })} />
+          <EliteInput label="Contraseña Inicial *" type="password" required value={newUserFormData.password} onChange={(e) => setNewUserFormData({ ...newUserFormData, password: e.target.value })} />
+          <EliteSelect label="Rol *" value={newUserFormData.role} onChange={(e) => setNewUserFormData({ ...newUserFormData, role: e.target.value })}>
+            <option value="PLAYER">Jugadora (PLAYER)</option>
+            <option value="COACH">Entrenador (COACH)</option>
+            <option value="ADMIN">Administrador (ADMIN)</option>
+            <option value="PARENT">Familiar (PARENT)</option>
+          </EliteSelect>
+          <div className="grid grid-cols-2 gap-3">
+            <EliteInput label="Nombre" value={newUserFormData.firstName} onChange={(e) => setNewUserFormData({ ...newUserFormData, firstName: e.target.value })} />
+            <EliteInput label="Apellidos" value={newUserFormData.lastName} onChange={(e) => setNewUserFormData({ ...newUserFormData, lastName: e.target.value })} />
+          </div>
+          <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
+            <EliteButton type="button" variant="ghost" onClick={() => setIsCreatingUser(false)}>Cancelar</EliteButton>
+            <EliteButton type="submit">Crear Usuario</EliteButton>
+          </div>
+        </form>
+      </EliteModal>
     </div>
   );
 }

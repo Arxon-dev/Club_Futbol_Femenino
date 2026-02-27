@@ -6,6 +6,7 @@
 > Task :app:processDebugNavigationResources UP-TO-DATE
 > Task :app:compileDebugNavigationResources UP-TO-DATE
 > Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
 > Task :app:mapDebugSourceSetPaths UP-TO-DATE
 > Task :app:generateDebugResources UP-TO-DATE
 > Task :app:mergeDebugResources UP-TO-DATE
@@ -36,20 +37,22 @@
 > Task :app:writeDebugSigningConfigVersions UP-TO-DATE
 
 > Task :app:compileDebugKotlin FAILED
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:26:53 Unresolved reference 'composable'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:27:29 @Composable invocations can only happen from the context of a @Composable function
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:36:53 Unresolved reference 'composable'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:37:61 @Composable invocations can only happen from the context of a @Composable function
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/data/remote/ApiService.kt:9:48 Unresolved reference 'HealthResponse'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/data/remote/ApiService.kt:14:32 Unresolved reference 'HealthResponse'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/ui/events/EventsScreen.kt:155:17 None of the following candidates is applicable:
-fun Text(text: AnnotatedString, modifier: Modifier = ..., color: Color = ..., fontSize: TextUnit = ..., fontStyle: FontStyle? = ..., fontWeight: FontWeight? = ..., fontFamily: FontFamily? = ..., letterSpacing: TextUnit = ..., textDecoration: TextDecoration? = ..., textAlign: TextAlign? = ..., lineHeight: TextUnit = ..., overflow: TextOverflow = ..., softWrap: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., inlineContent: Map<String, InlineTextContent> = ..., onTextLayout: (TextLayoutResult) -> Unit = ..., style: TextStyle = ...): Unit
-fun Text(text: String, modifier: Modifier = ..., color: Color = ..., fontSize: TextUnit = ..., fontStyle: FontStyle? = ..., fontWeight: FontWeight? = ..., fontFamily: FontFamily? = ..., letterSpacing: TextUnit = ..., textDecoration: TextDecoration? = ..., textAlign: TextAlign? = ..., lineHeight: TextUnit = ..., overflow: TextOverflow = ..., softWrap: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., onTextLayout: ((TextLayoutResult) -> Unit)? = ..., style: TextStyle = ...): Unit
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/ui/login/LoginViewModel.kt:40:30 Unresolved reference 'isSuccessful'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/ui/login/LoginViewModel.kt:40:55 Unresolved reference 'body'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/ui/login/LoginViewModel.kt:41:41 Unresolved reference 'body'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/ui/login/LoginViewModel.kt:42:64 Unresolved reference 'token'.
-e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/ui/login/LoginViewModel.kt:42:76 Unresolved reference 'user'.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:64:82 Unresolved reference 'Manifest'.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:65:55 Unresolved reference 'Manifest'.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:100:64 Unresolved reference 'Person'.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:147:5 'onNewIntent' overrides nothing.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:147:38 Unresolved reference 'Intent'.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:152:38 Unresolved reference 'Intent'.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:153:17 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:153:17 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun <T, R> T.let(block: (T) -> R): R
+    [R|Contract description]
+     <
+        CallsInPlace(block, EXACTLY_ONCE)
+    >
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:153:21 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:154:28 Unresolved reference 'getStringExtra'.
+e: file:///E:/OpoMelilla_2025/App_Futbol/app/app/src/main/java/com/opomelilla/futbol/MainActivity.kt:156:37 Assignment type mismatch: actual type is 'kotlin.Any', but 'kotlin.String?' was expected.
 
 FAILURE: Build failed with an exception.
 
@@ -65,4 +68,4 @@ Execution failed for task ':app:compileDebugKotlin'.
 > Get more help at https://help.gradle.org.
 
 BUILD FAILED in 4s
-31 actionable tasks: 1 executed, 30 up-to-date
+32 actionable tasks: 1 executed, 31 up-to-date

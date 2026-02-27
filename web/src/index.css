@@ -6,10 +6,34 @@
 
 @layer base {
   body {
-    @apply bg-elite-bg text-slate-50 font-sans antialiased selection:bg-elite-primary/30 selection:text-elite-secondary;
+    @apply bg-elite-bg text-slate-50 font-sans antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
+  }
+
+  /* Dark select/date inputs */
+  select option {
+    @apply bg-elite-surface text-white;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
   }
 }

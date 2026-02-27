@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { Lock, Mail, Loader2 } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,7 +16,6 @@ export default function Login() {
       setLoading(true);
       setError('');
       await authService.login(email, password);
-      // Login exitoso, redirigimos al dashboard
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión');
@@ -25,68 +25,84 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0d0f12] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-[#1a1d24] p-8 rounded-2xl shadow-xl border border-gray-800">
-        <div>
+    <div className="min-h-screen flex items-center justify-center bg-elite-bg px-4">
+      {/* Decorative background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-elite-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-elite-secondary/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-sm space-y-8 bg-elite-surface p-8 rounded-2xl border border-white/[0.06] shadow-2xl shadow-black/40 animate-slide-up">
+        {/* Logo */}
+        <div className="text-center">
           <img
-            className="mx-auto h-24 w-auto object-contain rounded-xl"
+            className="mx-auto h-20 w-20 object-contain rounded-2xl bg-white/5 p-2"
             src="/logo.png"
             alt="Logo Torreblanca Melilla CF"
           />
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white font-outfit">
-            Acceso Panel Admin
+          <h2 className="mt-5 text-2xl font-bold text-white font-heading">
+            Panel de Gestión
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-400 font-inter">
-            Club de Fútbol Femenino
+          <p className="mt-1.5 text-sm text-slate-500">
+            Club de Fútbol Femenino Torreblanca
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <input type="hidden" name="remember" defaultValue="true" />
-          {error && (
-            <div className="text-sm text-red-500 bg-red-500/10 p-3 rounded-lg border border-red-500/20 text-center">
-              {error}
-            </div>
-          )}
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label className="text-gray-300 font-medium text-sm">Correo Electrónico</label>
+
+        {/* Error */}
+        {error && (
+          <div className="text-sm text-elite-accent bg-elite-accent/10 p-3 rounded-xl border border-elite-accent/20 text-center">
+            {error}
+          </div>
+        )}
+
+        {/* Form */}
+        <form className="space-y-5" onSubmit={handleLogin}>
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-1.5">Correo Electrónico</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
-                id="email-address"
-                name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-700 bg-gray-900 placeholder-gray-500 text-white rounded-lg focus:outline-none focus:ring-[#ED1C24] focus:border-[#ED1C24] focus:z-10 sm:text-sm transition-colors duration-200 mt-1"
-                placeholder="admin@opomelilla.com"
+                className="w-full bg-elite-bg/80 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-elite-primary/60 focus:border-elite-primary/40 transition-all text-sm"
+                placeholder="admin@club.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div>
-              <label className="text-gray-300 font-medium text-sm">Contraseña</label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-1.5">Contraseña</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
-                id="password"
-                name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-700 bg-gray-900 placeholder-gray-500 text-white rounded-lg focus:outline-none focus:ring-[#ED1C24] focus:border-[#ED1C24] focus:z-10 sm:text-sm transition-colors duration-200 mt-1"
-                placeholder="Tu contraseña secreta"
+                className="w-full bg-elite-bg/80 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-elite-primary/60 focus:border-elite-primary/40 transition-all text-sm"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white ${loading ? 'bg-gray-600' : 'bg-[#ED1C24] hover:bg-[#DE2D44] focus:ring-2 focus:ring-offset-2 focus:ring-[#ED1C24] focus:ring-offset-gray-900'} transition-all duration-200 uppercase tracking-wider font-outfit`}
-            >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-elite-primary hover:bg-elite-primary-hover text-white text-sm font-semibold rounded-xl shadow-lg shadow-elite-primary/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-heading uppercase tracking-wider"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Entrando...
+              </>
+            ) : (
+              'Entrar'
+            )}
+          </button>
         </form>
       </div>
     </div>

@@ -1,225 +1,139 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { socialLinkService, SocialLinks } from '../services/socialLinkService';
 import { authService } from '../services/authService';
-import { Edit2, Save, AlertCircle, X } from 'lucide-react';
+import { Loader2, Instagram, Twitter, Facebook, Youtube, Save } from 'lucide-react';
+import PageHeader from '../components/ui/PageHeader';
+import EliteCard from '../components/ui/EliteCard';
+import EliteButton from '../components/ui/EliteButton';
 
-const SocialHub: React.FC = () => {
+
+interface SocialField {
+  key: keyof Omit<SocialLinks, 'id' | 'updatedAt'>;
+  label: string;
+  icon: React.ReactNode;
+  placeholder: string;
+  colors: string;
+}
+
+const fields: SocialField[] = [
+  { key: 'instagramUrl', label: 'Instagram', icon: <Instagram className="w-5 h-5" />, placeholder: 'https://instagram.com/...', colors: 'from-pink-500/20 to-purple-500/20 text-pink-400' },
+  { key: 'facebookUrl', label: 'Facebook', icon: <Facebook className="w-5 h-5" />, placeholder: 'https://facebook.com/...', colors: 'from-blue-600/20 to-blue-500/20 text-blue-400' },
+  { key: 'twitterUrl', label: 'Twitter / X', icon: <Twitter className="w-5 h-5" />, placeholder: 'https://twitter.com/...', colors: 'from-sky-500/20 to-blue-500/20 text-sky-400' },
+  { key: 'youtubeUrl', label: 'YouTube', icon: <Youtube className="w-5 h-5" />, placeholder: 'https://youtube.com/...', colors: 'from-red-500/20 to-rose-500/20 text-red-400' },
+];
+
+export default function SocialHubPage() {
   const [links, setLinks] = useState<SocialLinks | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ instagramUrl: '', facebookUrl: '', youtubeUrl: '', twitterUrl: '' });
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<Partial<SocialLinks>>({});
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const user = authService.getCurrentUser();
   const isAdmin = user?.role === 'ADMIN';
 
-  useEffect(() => {
-    fetchLinks();
-  }, []);
+  useEffect(() => { loadLinks(); }, []);
 
-  const fetchLinks = async () => {
+  const loadLinks = async () => {
     try {
       setLoading(true);
       const data = await socialLinkService.getLinks();
       setLinks(data);
-      setEditData({
-        instagramUrl: data.instagramUrl || '',
-        facebookUrl: data.facebookUrl || '',
-        youtubeUrl: data.youtubeUrl || '',
-        twitterUrl: data.twitterUrl || ''
-      });
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar los enlaces sociales');
-    } finally {
-      setLoading(false);
-    }
+      setForm({ instagramUrl: data.instagramUrl, facebookUrl: data.facebookUrl, twitterUrl: data.twitterUrl, youtubeUrl: data.youtubeUrl });
+    } catch { setError('Error al cargar redes sociales'); }
+    finally { setLoading(false); }
   };
 
   const handleSave = async () => {
+    setSaving(true); setError(''); setSuccessMsg('');
     try {
-      setSaving(true);
-      const updated = await socialLinkService.updateLinks(editData);
-      setLinks({ ...links!, ...updated });
-      setIsEditing(false);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Error al guardar los enlaces');
-    } finally {
-      setSaving(false);
-    }
+      const updated = await socialLinkService.updateLinks(form);
+      setLinks(updated);
+      setEditing(false);
+      setSuccessMsg('Redes sociales actualizadas correctamente.');
+    } catch (err: any) { setError(err.message || 'Error al guardar'); }
+    finally { setSaving(false); }
   };
-
-  const socialCards = [
-    {
-      name: 'Instagram',
-      urlKey: 'instagramUrl' as const,
-      icon: (
-        <svg fill="currentColor" viewBox="0 0 24 24" className="w-8 h-8">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-        </svg>
-      ),
-      gradient: 'from-yellow-400 via-pink-500 to-purple-600',
-      hoverBg: 'hover:bg-pink-500/10',
-    },
-    {
-      name: 'Facebook',
-      urlKey: 'facebookUrl' as const,
-      icon: (
-        <svg fill="currentColor" viewBox="0 0 24 24" className="w-8 h-8">
-          <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
-        </svg>
-      ),
-      gradient: 'from-blue-500 to-blue-700',
-      hoverBg: 'hover:bg-blue-500/10',
-    },
-    {
-      name: 'YouTube',
-      urlKey: 'youtubeUrl' as const,
-      icon: (
-        <svg fill="currentColor" viewBox="0 0 24 24" className="w-8 h-8">
-          <path d="M21.582 6.186c-.23-.86-.908-1.538-1.768-1.768C18.254 4 12 4 12 4s-6.254 0-7.814.418c-.86.23-1.538.908-1.768 1.768C2 7.746 2 12 2 12s0 4.254.418 5.814c.23.86.908 1.538 1.768 1.768 1.56.418 7.814.418 7.814.418s6.254 0 7.814-.418c.861-.23 1.538-.908 1.768-1.768C22 16.254 22 12 22 12s0-4.254-.418-5.814zM10 15.464V8.536L16 12l-6 3.464z"/>
-        </svg>
-      ),
-      gradient: 'from-red-500 to-red-700',
-      hoverBg: 'hover:bg-red-500/10',
-    },
-    {
-      name: 'X (Twitter)',
-      urlKey: 'twitterUrl' as const,
-      icon: (
-        <svg fill="currentColor" viewBox="0 0 24 24" className="w-8 h-8">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-      ),
-      gradient: 'from-gray-600 to-gray-800',
-      hoverBg: 'hover:bg-gray-500/10',
-    }
-  ];
-
-  const visibleCards = isEditing
-    ? socialCards
-    : socialCards.filter(card => links && links[card.urlKey]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-elite-primary border-t-transparent"></div>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-elite-primary" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-white tracking-tight mb-3 font-heading">
-          Social Hub
-        </h1>
-        <p className="text-lg text-slate-400">
-          Conecta con nosotros a través de nuestras redes sociales oficiales.
-        </p>
+    <div className="max-w-2xl mx-auto space-y-6 animate-slide-up">
+      <PageHeader
+        title="Social Hub"
+        subtitle="Redes sociales del club."
+        actions={
+          isAdmin && !editing ? (
+            <EliteButton onClick={() => setEditing(true)}>Editar Enlaces</EliteButton>
+          ) : undefined
+        }
+      />
+
+      {successMsg && (
+        <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-sm">
+          ✅ {successMsg}
+        </div>
+      )}
+      {error && (
+        <div className="p-3 rounded-xl bg-elite-accent/10 text-elite-accent border border-elite-accent/20 text-sm">
+          ⚠️ {error}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {fields.map((field) => {
+          const url = editing ? (form[field.key] || '') : (links?.[field.key] || '');
+          return (
+            <EliteCard key={field.key} className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${field.colors} flex items-center justify-center flex-shrink-0`}>
+                {field.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">{field.label}</p>
+                {editing ? (
+                  <input
+                    type="url"
+                    className="w-full bg-elite-bg/80 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-elite-primary/60 text-sm"
+                    placeholder={field.placeholder}
+                    value={url}
+                    onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                  />
+                ) : url ? (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-elite-secondary hover:text-elite-secondary/80 truncate block transition-colors"
+                  >
+                    {url.replace(/https?:\/\/(www\.)?/, '')}
+                  </a>
+                ) : (
+                  <p className="text-sm text-slate-600 italic">No configurado</p>
+                )}
+              </div>
+            </EliteCard>
+          );
+        })}
       </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Admin Edit Button */}
-      {isAdmin && !isEditing && (
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-elite-primary text-white hover:bg-elite-primary/80 rounded-xl font-medium transition-all shadow-lg shadow-elite-primary/25"
-          >
-            <Edit2 className="w-4 h-4" />
-            Editar Enlaces
-          </button>
-        </div>
-      )}
-
-      {/* Edit Mode */}
-      {isEditing && (
-        <div className="mb-8 p-6 bg-elite-surface border border-white/10 rounded-2xl space-y-4">
-          <h2 className="text-xl font-bold text-white mb-4 font-heading">Configurar Enlaces Sociales</h2>
-          {socialCards.map(card => (
-            <div key={card.urlKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-              <label className="text-white font-medium w-28 flex-shrink-0">{card.name}:</label>
-              <input
-                type="url"
-                placeholder={`https://${card.name.toLowerCase().replace(/\s.*/, '')}.com/...`}
-                value={editData[card.urlKey]}
-                onChange={e => setEditData({ ...editData, [card.urlKey]: e.target.value })}
-                className="flex-1 w-full px-4 py-2 bg-elite-bg border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-elite-primary focus:border-transparent transition-all"
-              />
-            </div>
-          ))}
-          <div className="flex gap-3 pt-4 border-t border-white/5">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors font-medium disabled:opacity-50 shadow-lg shadow-emerald-600/25"
-            >
-              <Save className="w-4 h-4" />
-              {saving ? 'Guardando...' : 'Guardar'}
-            </button>
-            <button
-              onClick={() => {
-                setIsEditing(false);
-                if (links) {
-                  setEditData({
-                    instagramUrl: links.instagramUrl || '',
-                    facebookUrl: links.facebookUrl || '',
-                    youtubeUrl: links.youtubeUrl || '',
-                    twitterUrl: links.twitterUrl || ''
-                  });
-                }
-              }}
-              className="flex items-center gap-2 px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
-            >
-              <X className="w-4 h-4" />
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Social Cards */}
-      {visibleCards.length === 0 && !isEditing ? (
-        <div className="text-center py-16 text-slate-500">
-          <p className="text-lg">No hay enlaces sociales configurados aún.</p>
-          {isAdmin && <p className="text-sm mt-2">Haz clic en "Editar Enlaces" para añadir las URLs.</p>}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {visibleCards.map((card) => {
-            const url = links ? links[card.urlKey] : '';
-            if (!url && !isEditing) return null;
-            return (
-              <a
-                key={card.name}
-                href={url || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`bg-elite-surface border border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 hover:border-white/20 hover:shadow-2xl group ${!url ? 'opacity-40 pointer-events-none' : ''}`}
-              >
-                <div className={`w-20 h-20 rounded-full bg-gradient-to-tr ${card.gradient} flex items-center justify-center text-white mb-6 transform transition-transform duration-500 group-hover:rotate-12 shadow-lg`}>
-                  {card.icon}
-                </div>
-                <h2 className="text-xl font-bold text-white font-heading">
-                  {card.name}
-                </h2>
-              </a>
-            );
-          })}
+      {editing && (
+        <div className="flex justify-end gap-2">
+          <EliteButton variant="ghost" onClick={() => { setEditing(false); if (links) setForm({ instagramUrl: links.instagramUrl, facebookUrl: links.facebookUrl, twitterUrl: links.twitterUrl, youtubeUrl: links.youtubeUrl }); }}>
+            Cancelar
+          </EliteButton>
+          <EliteButton onClick={handleSave} loading={saving} icon={!saving ? <Save className="w-4 h-4" /> : undefined}>
+            Guardar
+          </EliteButton>
         </div>
       )}
     </div>
   );
-};
-
-export default SocialHub;
+}
