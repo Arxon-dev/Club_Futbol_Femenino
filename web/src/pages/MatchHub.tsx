@@ -120,23 +120,23 @@ const MatchHubPage: React.FC = () => {
 
   if (loading && matches.length === 0) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-elite-primary border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Match Hub</h1>
-          <p className="text-gray-400">Calendario de partidos y resultados.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white mb-2 font-heading">Match Hub</h1>
+          <p className="text-slate-400">Calendario de partidos y resultados.</p>
         </div>
         {isAdmin && (
           <button
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-black rounded-xl font-medium transition-all shadow-[0_0_15px_rgba(202,240,15,0.3)] hover:shadow-[0_0_20px_rgba(202,240,15,0.4)]"
+            className="flex items-center gap-2 px-5 py-2.5 bg-elite-primary text-white hover:bg-elite-primary/80 rounded-xl font-medium transition-all shadow-lg shadow-elite-primary/25"
           >
             <Plus className="w-5 h-5" />
             Añadir Partido
@@ -145,14 +145,14 @@ const MatchHubPage: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-xl flex items-start gap-3">
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl flex items-start gap-3">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <p>{error}</p>
         </div>
       )}
 
       {matches.length === 0 && !loading && !error && (
-        <div className="elite-card text-center py-12">
+        <div className="bg-elite-surface border border-white/10 rounded-2xl p-8 text-center py-12">
           <Calendar className="w-12 h-12 text-white/20 mx-auto mb-4" />
           <h3 className="text-xl font-medium text-white mb-2">No hay partidos programados</h3>
           <p className="text-gray-400">Los próximos enfrentamientos aparecerán aquí.</p>
@@ -161,7 +161,7 @@ const MatchHubPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {matches.map(match => (
-          <div key={match.id} className="elite-card flex flex-col group relative overflow-hidden transition-all hover:border-primary/50 hover:shadow-[0_0_20px_rgba(202,240,15,0.1)]">
+          <div key={match.id} className="bg-elite-surface border border-white/10 rounded-2xl p-6 flex flex-col group relative overflow-hidden transition-all hover:border-elite-primary/50 hover:shadow-xl">
             {/* Contenedor Superior (Fondo logo o patrón) */}
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
               <Shield className="w-32 h-32" />
@@ -170,7 +170,7 @@ const MatchHubPage: React.FC = () => {
             <div className="relative z-10 flex-1 flex flex-col">
               {/* Encabezado: Competición y Botones Admin */}
               <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-primary uppercase tracking-wider">
+                <span className="px-3 py-1 bg-elite-primary/10 border border-elite-primary/20 rounded-full text-xs font-medium text-elite-primary uppercase tracking-wider">
                   {match.competition}
                 </span>
                 
@@ -197,7 +197,7 @@ const MatchHubPage: React.FC = () => {
                 )}
                 <h3 className="text-xl font-bold text-white leading-tight mb-1">{match.opponentName}</h3>
                 <div className="flex items-center gap-2 text-sm text-gray-400 mt-2">
-                  <MapPin className="w-4 h-4 text-primary" />
+                  <MapPin className="w-4 h-4 text-elite-secondary" />
                   <span>{match.location}</span>
                 </div>
               </div>
@@ -209,7 +209,7 @@ const MatchHubPage: React.FC = () => {
                   <span>{formatDate(match.date)}</span>
                 </div>
                 <div className="px-3 py-1 bg-white/5 rounded-lg flex items-center gap-2">
-                  <Trophy className={`w-4 h-4 ${match.result?.toLowerCase().includes('w') ? 'text-primary' : 'text-gray-500'}`} />
+                  <Trophy className={`w-4 h-4 ${match.result?.toLowerCase().includes('w') ? 'text-emerald-400' : 'text-slate-500'}`} />
                   <span className="font-medium text-white">{match.result}</span>
                 </div>
               </div>
@@ -221,7 +221,7 @@ const MatchHubPage: React.FC = () => {
       {/* MODAL PARA CREAR/EDITAR */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-elite-surface border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="bg-elite-surface border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] shadow-elite-primary/10">
             <div className="flex items-center justify-between p-6 border-b border-white/5">
               <h2 className="text-xl font-bold text-white">
                 {editingMatch ? 'Editar Partido' : 'Nuevo Partido'}
@@ -240,7 +240,7 @@ const MatchHubPage: React.FC = () => {
                     required
                     value={formData.opponentName || ''}
                     onChange={e => setFormData({...formData, opponentName: e.target.value})}
-                    className="w-full bg-elite-dark border border-white/5 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full bg-elite-bg border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-elite-primary focus:border-transparent"
                     placeholder="Ej. CD Leganés"
                   />
                 </div>
@@ -252,7 +252,7 @@ const MatchHubPage: React.FC = () => {
                     required
                     value={formData.date || ''}
                     onChange={e => setFormData({...formData, date: e.target.value})}
-                    className="w-full bg-elite-dark border border-white/5 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent [color-scheme:dark]"
+                    className="w-full bg-elite-bg border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-elite-primary focus:border-transparent [color-scheme:dark]"
                   />
                 </div>
                 
@@ -263,7 +263,7 @@ const MatchHubPage: React.FC = () => {
                     required
                     value={formData.competition || ''}
                     onChange={e => setFormData({...formData, competition: e.target.value})}
-                    className="w-full bg-elite-dark border border-white/5 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full bg-elite-bg border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-elite-primary focus:border-transparent"
                     placeholder="Ej. Liga F"
                   />
                 </div>
@@ -315,7 +315,7 @@ const MatchHubPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-black rounded-xl font-medium transition-all shadow-[0_0_15px_rgba(202,240,15,0.3)] hover:shadow-[0_0_20px_rgba(202,240,15,0.4)] disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50"
                 >
                   <Save className="w-5 h-5" />
                   {saving ? 'Guardando...' : 'Guardar Partido'}
