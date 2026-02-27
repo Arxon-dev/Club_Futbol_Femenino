@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { userService } from '../services/userService';
-import { Plus, Loader2, UserCircle } from 'lucide-react';
+import { uploadProfilePhoto } from '../services/supabaseClient';
+import { Plus, Loader2, UserCircle, Camera } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import EliteCard from '../components/ui/EliteCard';
 import EliteButton from '../components/ui/EliteButton';
@@ -17,6 +18,7 @@ interface UserProfile {
   dorsal?: number;
   clothingSize?: string;
   medicalInfo?: string;
+  photoUrl?: string;
 }
 
 interface User {
@@ -35,6 +37,9 @@ export default function UsersPanel() {
 
   const [formData, setFormData] = useState<UserProfile>({});
   const [newUserFormData, setNewUserFormData] = useState({ email: '', password: '', role: 'PLAYER', firstName: '', lastName: '' });
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadUsers(); }, []);
 
@@ -54,17 +59,34 @@ export default function UsersPanel() {
       phone: user.profile?.phone || '', birthdate: user.profile?.birthdate || '',
       position: user.profile?.position || '', dorsal: user.profile?.dorsal,
       clothingSize: user.profile?.clothingSize || '', medicalInfo: user.profile?.medicalInfo || '',
+      photoUrl: user.profile?.photoUrl || '',
     });
+    setPhotoFile(null);
+    setPhotoPreview(user.profile?.photoUrl || null);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
     try {
-      await userService.updateProfile(editingUser.id, formData);
+      let photoUrl = formData.photoUrl;
+      if (photoFile) {
+        photoUrl = await uploadProfilePhoto(photoFile, editingUser.id);
+      }
+      await userService.updateProfile(editingUser.id, { ...formData, photoUrl });
       setEditingUser(null);
+      setPhotoFile(null);
+      setPhotoPreview(null);
       await loadUsers();
     } catch (err: any) { alert('Error al guardar: ' + err.message); }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -173,6 +195,22 @@ export default function UsersPanel() {
       {/* Edit Profile Modal */}
       <EliteModal isOpen={!!editingUser} onClose={() => setEditingUser(null)} title={`Editar Perfil — ${editingUser?.email || ''}`} maxWidth="max-w-xl">
         <form onSubmit={handleSave} className="space-y-4">
+          {/* Photo upload */}
+          <div className="flex justify-center">
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              {photoPreview ? (
+                <img src={photoPreview} alt="Foto" className="w-20 h-20 rounded-full object-cover border-2 border-elite-primary/30" />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-elite-primary/10 border-2 border-dashed border-elite-primary/30 flex items-center justify-center">
+                  <Camera className="w-7 h-7 text-elite-primary/40" />
+                </div>
+              )}
+              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <Camera className="w-5 h-5 text-white" />
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <EliteInput label="Nombre" value={formData.firstName || ''} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} />
             <EliteInput label="Apellidos" value={formData.lastName || ''} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />

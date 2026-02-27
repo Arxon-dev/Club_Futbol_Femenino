@@ -38,6 +38,10 @@ const Profile = sequelize.define('profile', {
   position: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  photoUrl: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   underscored: true,

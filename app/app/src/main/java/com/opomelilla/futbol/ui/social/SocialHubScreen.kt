@@ -5,13 +5,14 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
@@ -74,16 +76,16 @@ fun SocialHubScreen(
         } else if (links != null) {
             val socialItems = listOfNotNull(
                 links!!.instagramUrl.takeIf { it.isNotBlank() }?.let {
-                    SocialItem("Instagram", it, Icons.Default.Info, Color(0xFFE1306C))
+                    SocialItem("Instagram", it, null, Color(0xFFE1306C), "📷")
                 },
                 links!!.facebookUrl.takeIf { it.isNotBlank() }?.let {
-                    SocialItem("Facebook", it, Icons.Default.ThumbUp, Color(0xFF1877F2))
+                    SocialItem("Facebook", it, Icons.Default.ThumbUp, Color(0xFF1877F2), null)
                 },
                 links!!.youtubeUrl.takeIf { it.isNotBlank() }?.let {
-                    SocialItem("YouTube", it, Icons.Default.PlayArrow, Color(0xFFFF0000))
+                    SocialItem("YouTube", it, Icons.Default.PlayArrow, Color(0xFFFF0000), null)
                 },
                 links!!.twitterUrl.takeIf { it.isNotBlank() }?.let {
-                    SocialItem("X (Twitter)", it, Icons.Default.Send, Color(0xFF000000))
+                    SocialItem("X (Twitter)", it, null, Color(0xFF1DA1F2), "𝕏")
                 }
             )
 
@@ -96,13 +98,17 @@ fun SocialHubScreen(
                     textAlign = TextAlign.Center
                 )
             } else {
-                Row(
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp)
                 ) {
-                    socialItems.forEach { item ->
+                    items(socialItems) { item ->
                         SocialButton(
                             icon = item.icon,
+                            emoji = item.emoji,
                             text = item.name,
                             color = item.color,
                             onClick = {
@@ -120,18 +126,19 @@ fun SocialHubScreen(
 private data class SocialItem(
     val name: String,
     val url: String,
-    val icon: ImageVector,
-    val color: Color
+    val icon: ImageVector?,
+    val color: Color,
+    val emoji: String?
 )
 
 @Composable
-fun SocialButton(icon: ImageVector, text: String, color: Color, onClick: () -> Unit) {
+fun SocialButton(icon: ImageVector?, emoji: String?, text: String, color: Color, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
         Box(
             modifier = Modifier
@@ -139,19 +146,28 @@ fun SocialButton(icon: ImageVector, text: String, color: Color, onClick: () -> U
                 .background(color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = text,
-                tint = Color.White,
-                modifier = Modifier.size(32.dp)
-            )
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = text,
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            } else if (emoji != null) {
+                Text(
+                    text = emoji,
+                    fontSize = 28.sp,
+                    color = Color.White
+                )
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
     }
 }

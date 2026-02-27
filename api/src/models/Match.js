@@ -33,6 +33,10 @@ const Match = sequelize.define('Match', {
     type: DataTypes.STRING,
     allowNull: false,
     defaultValue: 'Liga'
+  },
+  time: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   tableName: 'Matches',

@@ -13,6 +13,7 @@ export interface ProfileDto {
   medicalInfo?: string;
   dorsal?: number;
   position?: string;
+  photoUrl?: string;
 }
 
 export interface UserDto {

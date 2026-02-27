@@ -1,14 +1,33 @@
 import { useEffect, useState } from 'react';
 import { matchService, Match } from '../services/matchService';
 import { authService } from '../services/authService';
-import { Plus, Calendar, MapPin, Trophy, Edit2, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Calendar, Clock, MapPin, Trophy, Edit2, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import EliteCard from '../components/ui/EliteCard';
 import EliteButton from '../components/ui/EliteButton';
 import EliteModal from '../components/ui/EliteModal';
 import { EliteInput, EliteSelect } from '../components/ui/EliteInput';
 
-const emptyMatch: Partial<Match> = { opponentName: '', date: '', location: '', result: '', competition: 'Liga' };
+/** Convierte un ISO datetime a formato YYYY-MM-DD para <input type="date"> */
+function toDateInputValue(isoDate: string | undefined | null): string {
+  if (!isoDate) return '';
+  try {
+    return new Date(isoDate).toISOString().split('T')[0];
+  } catch { return ''; }
+}
+
+/** Formatea una fecha ISO a DD-MM-YYYY para mostrar en la UI */
+function formatDateDisplay(isoDate: string): string {
+  try {
+    const d = new Date(isoDate);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  } catch { return isoDate; }
+}
+
+const emptyMatch: Partial<Match> = { opponentName: '', date: '', time: '', location: '', result: '', competition: 'Liga' };
 
 export default function MatchHubPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -36,7 +55,14 @@ export default function MatchHubPage() {
   const openCreate = () => { setEditingMatch(null); setForm(emptyMatch); setModalOpen(true); };
   const openEdit = (m: Match) => {
     setEditingMatch(m);
-    setForm({ opponentName: m.opponentName, date: m.date, location: m.location || '', result: m.result || '', competition: m.competition || 'Liga' });
+    setForm({
+      opponentName: m.opponentName,
+      date: toDateInputValue(m.date),
+      time: m.time || '',
+      location: m.location || '',
+      result: m.result || '',
+      competition: m.competition || 'Liga'
+    });
     setModalOpen(true);
   };
 
@@ -112,7 +138,13 @@ export default function MatchHubPage() {
                     <div className="flex flex-col gap-1">
                       <span className="flex items-center gap-2 text-sm text-slate-400">
                         <Calendar className="w-3.5 h-3.5 text-slate-600" />
-                        {new Date(match.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        {formatDateDisplay(match.date)}
+                        {match.time && (
+                          <>
+                            <Clock className="w-3.5 h-3.5 text-slate-600 ml-2" />
+                            <span>{match.time}h</span>
+                          </>
+                        )}
                       </span>
                       {match.location && (
                         <span className="flex items-center gap-2 text-sm text-slate-400">
@@ -149,7 +181,10 @@ export default function MatchHubPage() {
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <EliteInput label="Rival *" required value={form.opponentName || ''} onChange={(e) => setForm({ ...form, opponentName: e.target.value })} placeholder="Nombre del equipo rival" />
-          <EliteInput label="Fecha *" type="date" required value={form.date || ''} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+          <div className="grid grid-cols-2 gap-3">
+            <EliteInput label="Fecha *" type="date" required value={form.date || ''} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+            <EliteInput label="Hora" type="time" value={form.time || ''} onChange={(e) => setForm({ ...form, time: e.target.value })} />
+          </div>
           <EliteInput label="Ubicación" value={form.location || ''} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Campo, pabellón..." />
           <EliteSelect label="Competición" value={form.competition || 'Liga'} onChange={(e) => setForm({ ...form, competition: e.target.value })}>
             <option value="Liga">Liga</option>

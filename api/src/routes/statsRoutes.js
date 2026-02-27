@@ -7,6 +7,7 @@ const { verifyToken, verifyRole } = require('../middleware/auth.middleware');
 router.use(verifyToken);
 router.use(verifyRole(['ADMIN', 'COACH']));
 
+router.get('/dashboard', statsController.getDashboardStats);
 router.get('/attendance', statsController.getAttendanceStats);
 router.get('/finances', statsController.getFinanceStats);
 

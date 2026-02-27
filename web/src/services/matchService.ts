@@ -20,6 +20,7 @@ export interface Match {
   location: string;
   result: string;
   competition: string;
+  time: string | null;
 }
 
 export const matchService = {

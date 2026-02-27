@@ -4,7 +4,8 @@ data class RosterProfileDto(
     val firstName: String?,
     val lastName: String?,
     val dorsal: Int?,
-    val position: String?
+    val position: String?,
+    val photoUrl: String?
 )
 
 data class RosterMemberDto(

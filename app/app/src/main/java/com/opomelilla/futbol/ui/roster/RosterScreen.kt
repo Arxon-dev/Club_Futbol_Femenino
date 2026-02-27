@@ -17,6 +17,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import com.opomelilla.futbol.data.remote.model.RosterMemberDto
 
 @Composable
@@ -153,23 +155,35 @@ fun RosterCard(member: RosterMemberDto, isStaff: Boolean = false) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar Circle
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isStaff) MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
-                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = initials,
-                    color = if (isStaff) MaterialTheme.colorScheme.secondary
-                    else MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+            val photoUrl = profile?.photoUrl
+            if (!photoUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = photoUrl,
+                    contentDescription = "$firstName $lastName",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isStaff) MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
+                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = initials,
+                        color = if (isStaff) MaterialTheme.colorScheme.secondary
+                        else MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -216,11 +230,12 @@ fun RosterCard(member: RosterMemberDto, isStaff: Boolean = false) {
 
 fun positionColor(position: String): Color {
     return when (position) {
-        "Portera" -> Color(0xFFF59E0B)      // amber
-        "Defensa" -> Color(0xFF10B981)       // emerald
-        "Centrocampista" -> Color(0xFF06B6D4) // cyan
-        "Delantera" -> Color(0xFFF43F5E)     // rose
-        "Staff" -> Color(0xFF8B5CF6)          // violet
-        else -> Color(0xFF94A3B8)             // slate
+        "Portera" -> Color(0xFFF59E0B)
+        "Cierre" -> Color(0xFF10B981)
+        "Ala" -> Color(0xFF06B6D4)
+        "Pívot" -> Color(0xFFF43F5E)
+        "Universal" -> Color(0xFF8B5CF6)
+        "Staff" -> Color(0xFF8B5CF6)
+        else -> Color(0xFF94A3B8)
     }
 }
