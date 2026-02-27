@@ -10,7 +10,7 @@ router.get('/', verifyToken, userController.getUsers);
 
 // POST /api/users - Create new user (Admin only)
 router.post('/', verifyToken, (req, res, next) => {
-    if (req.role === 'ADMIN') {
+    if (req.userRole === 'ADMIN') {
         next();
     } else {
         return res.status(403).json({ error: "Se requiere rol de Administrador para crear usuarios" });
@@ -24,7 +24,7 @@ router.get('/:userId/profile', verifyToken, userController.getProfile);
 // (A user can update their own profile, or an ADMIN can update anyone's profile)
 router.put('/:userId/profile', verifyToken, (req, res, next) => {
     // Extra guard: only ADMIN/COACH or the owner can update the profile
-    if (req.role === 'ADMIN' || req.role === 'COACH' || req.userId === req.params.userId) {
+    if (req.userRole === 'ADMIN' || req.userRole === 'COACH' || req.userId === req.params.userId) {
         next();
     } else {
         return res.status(403).json({ error: "Requiere rol de Administrador para modificar otros perfiles" });

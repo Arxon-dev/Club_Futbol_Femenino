@@ -5,7 +5,7 @@ const { verifyToken } = require('../middleware/auth.middleware');
 
 // Middleware: solo ADMIN puede modificar la plantilla
 const isAdmin = (req, res, next) => {
-  if (req.role === 'ADMIN') {
+  if (req.userRole === 'ADMIN') {
     next();
   } else {
     return res.status(403).json({ message: 'Se requiere rol de Administrador' });
