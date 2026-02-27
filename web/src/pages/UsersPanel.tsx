@@ -251,10 +251,10 @@ export default function UsersPanel() {
           <EliteInput label="Email *" type="email" required value={newUserFormData.email} onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })} />
           <EliteInput label="Contraseña Inicial *" type="password" required value={newUserFormData.password} onChange={(e) => setNewUserFormData({ ...newUserFormData, password: e.target.value })} />
           <EliteSelect label="Rol *" value={newUserFormData.role} onChange={(e) => setNewUserFormData({ ...newUserFormData, role: e.target.value })}>
-            <option value="PLAYER">Jugadora (PLAYER)</option>
-            <option value="COACH">Entrenador (COACH)</option>
-            <option value="ADMIN">Administrador (ADMIN)</option>
-            <option value="PARENT">Familiar (PARENT)</option>
+            <option value="PLAYER">Jugadora</option>
+            <option value="COACH">Entrenador</option>
+            <option value="ADMIN">Administrador</option>
+            <option value="PARENT">Familiar</option>
             <option value="DELEGATE">Delegado de Equipo</option>
             <option value="MATERIAL_MANAGER">Encargado de Material</option>
           </EliteSelect>

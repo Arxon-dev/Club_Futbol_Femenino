@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { socialLinkService, SocialLinks } from '../services/socialLinkService';
 import { authService } from '../services/authService';
-import { Loader2, Instagram, Twitter, Facebook, Youtube, Save } from 'lucide-react';
+import { Loader2, Twitter, Facebook, Youtube, Save } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import EliteCard from '../components/ui/EliteCard';
 import EliteButton from '../components/ui/EliteButton';
@@ -16,7 +16,7 @@ interface SocialField {
 }
 
 const fields: SocialField[] = [
-  { key: 'instagramUrl', label: 'Instagram', icon: <Instagram className="w-5 h-5" />, placeholder: 'https://instagram.com/...', colors: 'from-pink-500/20 to-purple-500/20 text-pink-400' },
+  { key: 'instagramUrl', label: 'Instagram', icon: <img src="/instagram.png" alt="Instagram" className="w-5 h-5 object-contain" />, placeholder: 'https://instagram.com/...', colors: 'from-pink-500/20 to-purple-500/20 text-pink-400' },
   { key: 'facebookUrl', label: 'Facebook', icon: <Facebook className="w-5 h-5" />, placeholder: 'https://facebook.com/...', colors: 'from-blue-600/20 to-blue-500/20 text-blue-400' },
   { key: 'twitterUrl', label: 'Twitter / X', icon: <Twitter className="w-5 h-5" />, placeholder: 'https://twitter.com/...', colors: 'from-sky-500/20 to-blue-500/20 text-sky-400' },
   { key: 'youtubeUrl', label: 'YouTube', icon: <Youtube className="w-5 h-5" />, placeholder: 'https://youtube.com/...', colors: 'from-red-500/20 to-rose-500/20 text-red-400' },
