@@ -1,5 +1,8 @@
 package com.opomelilla.futbol.ui.matches
 
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -133,13 +138,31 @@ fun MatchCard(match: MatchDto) {
             }
 
             if (!match.opponentLogoUrl.isNullOrEmpty()) {
-                AsyncImage(
-                    model = match.opponentLogoUrl,
-                    contentDescription = "Escudo Rival",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .padding(bottom = 12.dp)
-                )
+                if (match.opponentLogoUrl!!.startsWith("data:")) {
+                    // Decode base64 data URI to Bitmap
+                    val base64Data = match.opponentLogoUrl!!.substringAfter("base64,")
+                    val bytes = Base64.decode(base64Data, Base64.DEFAULT)
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Escudo Rival",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .padding(bottom = 12.dp)
+                        )
+                    }
+                } else {
+                    // Regular URL — use Coil
+                    AsyncImage(
+                        model = match.opponentLogoUrl,
+                        contentDescription = "Escudo Rival",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .padding(bottom = 12.dp)
+                    )
+                }
             } else {
                 Box(
                     modifier = Modifier
@@ -149,7 +172,7 @@ fun MatchCard(match: MatchDto) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.DateRange, // Placeholder
+                        imageVector = Icons.Default.DateRange,
                         contentDescription = "Escudo",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                         modifier = Modifier.size(40.dp)

@@ -151,7 +151,6 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("more_screen") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
-                                            restoreState = true
                                         }
                                     }
                                 )
