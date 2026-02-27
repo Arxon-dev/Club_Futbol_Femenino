@@ -136,6 +136,11 @@ export default function ChatPage() {
                             {getUserName(msg)}
                           </p>
                         )}
+                        {own && (
+                          <p className="text-[11px] font-semibold text-elite-primary/70 mb-0.5 text-right">
+                            Tú
+                          </p>
+                        )}
                         <p className="text-sm text-white/90 whitespace-pre-wrap break-words">{msg.content}</p>
                         <p className={`text-[10px] mt-1 ${own ? 'text-elite-primary/50 text-right' : 'text-slate-600'}`}>
                           {formatTime(msg.createdAt)}
@@ -159,7 +164,8 @@ export default function ChatPage() {
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Escribe un mensaje..."
-          className="flex-1 bg-elite-card border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-elite-primary/40 transition-colors"
+          style={{ backgroundColor: '#1a2236', color: '#ffffff' }}
+          className="flex-1 border border-white/10 rounded-xl px-4 py-3 text-sm placeholder-slate-500 resize-none focus:outline-none focus:border-elite-primary/40 transition-colors"
         />
         <button
           onClick={handleSend}

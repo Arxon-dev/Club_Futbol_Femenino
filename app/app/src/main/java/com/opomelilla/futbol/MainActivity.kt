@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         if (currentRoute in listOf(
                                 "match_hub", "chat_screen", "roster_screen", "profile",
-                                "more_screen", "treasury", "president_letter", "news_feed", "social_hub"
+                                "more_screen", "treasury", "president_letter", "news_feed", "social_hub", "merchandising"
                             )) {
                             NavigationBar {
                                 NavigationBarItem(
@@ -146,7 +146,7 @@ class MainActivity : ComponentActivity() {
                                 NavigationBarItem(
                                     icon = { Icon(Icons.Filled.MoreVert, contentDescription = "Más") },
                                     label = { Text("Más", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
-                                    selected = currentRoute in listOf("more_screen", "treasury", "president_letter", "news_feed", "social_hub"),
+                                    selected = currentRoute in listOf("more_screen", "treasury", "president_letter", "news_feed", "social_hub", "merchandising"),
                                     onClick = {
                                         navController.navigate("more_screen") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -211,6 +211,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("social_hub") {
                             com.opomelilla.futbol.ui.social.SocialHubScreen()
+                        }
+                        composable("merchandising") {
+                            com.opomelilla.futbol.ui.merchandising.MerchandisingScreen()
                         }
                     }
                 }

@@ -51,4 +51,7 @@ interface ApiService {
 
     @POST("chat")
     suspend fun sendMessage(@retrofit2.http.Body body: com.opomelilla.futbol.data.remote.model.SendMessageRequest): com.opomelilla.futbol.data.remote.model.ChatMessageDto
+
+    @GET("products")
+    suspend fun getProducts(): List<com.opomelilla.futbol.data.remote.model.ProductDto>
 }

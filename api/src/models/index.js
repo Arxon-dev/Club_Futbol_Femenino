@@ -8,6 +8,7 @@ const Match = require('./Match');
 const SocialLink = require('./SocialLink');
 const News = require('./News');
 const ChatMessage = require('./ChatMessage');
+const Product = require('./Product');
 
 // Relationships
 
@@ -30,5 +31,6 @@ module.exports = {
   Match,
   SocialLink,
   News,
-  ChatMessage
+  ChatMessage,
+  Product
 };

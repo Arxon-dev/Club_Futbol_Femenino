@@ -12,6 +12,7 @@ import {
   Newspaper,
   UsersRound,
   MessageCircle,
+  ShoppingBag,
   LogOut,
   Menu,
   X,
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { path: '/news', label: 'Noticias', icon: <Newspaper className="w-5 h-5" /> },
   { path: '/roster', label: 'Plantilla', icon: <UsersRound className="w-5 h-5" /> },
   { path: '/chat', label: 'Chat', icon: <MessageCircle className="w-5 h-5" /> },
+  { path: '/merchandising', label: 'Tienda', icon: <ShoppingBag className="w-5 h-5" /> },
   { path: '/treasury', label: 'Tesorería', icon: <Wallet className="w-5 h-5" /> },
   { path: '/notifications', label: 'Notificaciones', icon: <Bell className="w-5 h-5" /> },
 ];

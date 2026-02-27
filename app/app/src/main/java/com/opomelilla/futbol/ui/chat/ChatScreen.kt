@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -186,17 +187,18 @@ fun ChatBubble(msg: ChatMessageDto, isOwn: Boolean) {
             modifier = Modifier.widthIn(max = 280.dp)
         ) {
             Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                if (!isOwn) {
-                    Text(
-                        text = userName,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.secondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                }
+                Text(
+                    text = if (isOwn) "Tú" else userName,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isOwn) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = if (isOwn) Modifier.fillMaxWidth() else Modifier,
+                    textAlign = if (isOwn) TextAlign.End else TextAlign.Start
+                )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = msg.content,
                     fontSize = 14.sp,

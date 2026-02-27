@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +37,8 @@ fun MoreScreen(
     val menuItems = listOf(
         MoreMenuItem("news_feed", "Noticias", Icons.Filled.Notifications),
         MoreMenuItem("president_letter", "Carta Presidente", Icons.Filled.Email),
-        MoreMenuItem("treasury", "Tesorería", Icons.Filled.ShoppingCart),
+        MoreMenuItem("merchandising", "Tienda", Icons.Filled.ShoppingCart),
+        MoreMenuItem("treasury", "Tesorería", Icons.Filled.AccountBox),
         MoreMenuItem("social_hub", "Social Hub", Icons.Filled.Share),
     )
 
