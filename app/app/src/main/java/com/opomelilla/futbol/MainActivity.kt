@@ -159,9 +159,12 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
+                    // Auto-login: if token is saved, skip login screen
+                    val startDest = if (tokenManager.getToken() != null) "profile" else "login"
+
                     NavHost(
                         navController = navController, 
-                        startDestination = "login",
+                        startDestination = startDest,
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("login") {

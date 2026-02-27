@@ -21,6 +21,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.opomelilla.futbol.data.remote.model.ChatMessageDto
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -37,6 +40,18 @@ fun ChatScreen(
     val listState = rememberLazyListState()
 
     val currentUserId = viewModel.tokenManager.getUserId()
+
+    // Refresh data when screen resumes
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.fetchMessages()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     // Auto-scroll to bottom when new messages arrive
     LaunchedEffect(messages.size) {

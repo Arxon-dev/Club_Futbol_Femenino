@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: user.role, email: user.email },
       process.env.JWT_SECRET || 'supersecret_futsal_key',
-      { expiresIn: '24h' }
+      { expiresIn: '365d' }
     );
 
     res.status(200).json({
