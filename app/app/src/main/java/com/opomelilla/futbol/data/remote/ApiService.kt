@@ -39,4 +39,7 @@ interface ApiService {
 
     @GET("social-links")
     suspend fun getSocialLinks(): com.opomelilla.futbol.data.remote.model.SocialLinkDto
+
+    @GET("news")
+    suspend fun getNews(): List<com.opomelilla.futbol.data.remote.model.NewsDto>
 }

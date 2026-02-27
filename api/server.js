@@ -27,6 +27,7 @@ app.use('/api/users', require('./src/routes/user.routes'));
 app.use('/api/president-letter', require('./src/routes/presidentLetter.routes'));
 app.use('/api/matches', require('./src/routes/match.routes'));
 app.use('/api/social-links', require('./src/routes/socialLink.routes'));
+app.use('/api/news', require('./src/routes/news.routes'));
 
 
 const PORT = process.env.PORT || 3000;

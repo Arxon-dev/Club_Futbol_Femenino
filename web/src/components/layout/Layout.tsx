@@ -9,6 +9,7 @@ import {
   Share2,
   Wallet,
   Bell,
+  Newspaper,
   LogOut,
   Menu,
   X,
@@ -26,6 +27,7 @@ const navItems: NavItem[] = [
   { path: '/president-letter', label: 'Carta Presidente', icon: <FileText className="w-5 h-5" /> },
   { path: '/match-hub', label: 'Partidos', icon: <Trophy className="w-5 h-5" /> },
   { path: '/social-hub', label: 'Social Hub', icon: <Share2 className="w-5 h-5" /> },
+  { path: '/news', label: 'Noticias', icon: <Newspaper className="w-5 h-5" /> },
   { path: '/treasury', label: 'Tesorería', icon: <Wallet className="w-5 h-5" /> },
   { path: '/notifications', label: 'Notificaciones', icon: <Bell className="w-5 h-5" /> },
 ];

@@ -6,6 +6,7 @@ const Transaction = require('./Transaction')(sequelize);
 const PresidentLetter = require('./PresidentLetter');
 const Match = require('./Match');
 const SocialLink = require('./SocialLink');
+const News = require('./News');
 
 // Relationships
 
@@ -23,5 +24,6 @@ module.exports = {
   Profile,
   PresidentLetter,
   Match,
-  SocialLink
+  SocialLink,
+  News
 };

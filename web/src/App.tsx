@@ -6,6 +6,7 @@ import UsersPanel from './pages/UsersPanel';
 import PresidentLetterPage from './pages/PresidentLetter';
 import MatchHubPage from './pages/MatchHub';
 import SocialHubPage from './pages/SocialHub';
+import NewsPage from './pages/NewsPage';
 import Login from './pages/Login';
 import Layout from './components/layout/Layout';
 import { authService } from './services/authService';
@@ -43,6 +44,7 @@ function App() {
         <Route path="/president-letter" element={<ProtectedRoute><PresidentLetterPage /></ProtectedRoute>} />
         <Route path="/match-hub" element={<ProtectedRoute><MatchHubPage /></ProtectedRoute>} />
         <Route path="/social-hub" element={<ProtectedRoute><SocialHubPage /></ProtectedRoute>} />
+        <Route path="/news" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
         <Route path="/directory" element={<ProtectedRoute><UsersPanel /></ProtectedRoute>} />
         <Route path="/treasury" element={<ProtectedRoute><Treasury /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPanel /></ProtectedRoute>} />

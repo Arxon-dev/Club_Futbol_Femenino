@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -88,7 +89,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        if (currentRoute in listOf("treasury", "profile", "president_letter", "match_hub", "social_hub")) {
+                        if (currentRoute in listOf("treasury", "profile", "president_letter", "match_hub", "social_hub", "news_feed")) {
                             NavigationBar {
                                 NavigationBarItem(
                                     icon = { Icon(Icons.Filled.DateRange, contentDescription = "Partidos") },
@@ -96,6 +97,18 @@ class MainActivity : ComponentActivity() {
                                     selected = currentRoute == "match_hub",
                                     onClick = {
                                         navController.navigate("match_hub") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                )
+                                NavigationBarItem(
+                                    icon = { Icon(Icons.Filled.Notifications, contentDescription = "Noticias") },
+                                    label = { Text("Noticias") },
+                                    selected = currentRoute == "news_feed",
+                                    onClick = {
+                                        navController.navigate("news_feed") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -176,6 +189,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("social_hub") {
                             com.opomelilla.futbol.ui.social.SocialHubScreen()
+                        }
+                        composable("news_feed") {
+                            com.opomelilla.futbol.ui.news.NewsScreen()
                         }
                     }
                 }
