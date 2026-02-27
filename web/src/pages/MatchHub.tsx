@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { matchService, Match } from '../services/matchService';
 import { authService } from '../services/authService';
-import { Plus, Calendar, Clock, MapPin, Trophy, Edit2, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Calendar, Clock, MapPin, Trophy, Edit2, Trash2, Loader2, AlertCircle, Upload, Link } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import EliteCard from '../components/ui/EliteCard';
 import EliteButton from '../components/ui/EliteButton';
@@ -27,7 +27,7 @@ function formatDateDisplay(isoDate: string): string {
   } catch { return isoDate; }
 }
 
-const emptyMatch: Partial<Match> = { opponentName: '', date: '', time: '', location: '', result: '', competition: 'Liga' };
+const emptyMatch: Partial<Match> = { opponentName: '', date: '', time: '', location: '', result: '', competition: 'Liga', opponentLogoUrl: '' };
 
 export default function MatchHubPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -61,7 +61,8 @@ export default function MatchHubPage() {
       time: m.time || '',
       location: m.location || '',
       result: m.result || '',
-      competition: m.competition || 'Liga'
+      competition: m.competition || 'Liga',
+      opponentLogoUrl: m.opponentLogoUrl || ''
     });
     setModalOpen(true);
   };
@@ -121,51 +122,58 @@ export default function MatchHubPage() {
           {matches.map((match) => {
             const compInfo = compLabels[match.competition] || { text: match.competition || 'Otro', cls: 'bg-white/5 text-slate-400 border-white/10' };
             return (
-              <EliteCard key={match.id} className="group hover:border-white/10 transition-all">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 text-[11px] font-semibold rounded-full border ${compInfo.cls}`}>
-                        {compInfo.text}
-                      </span>
-                      {match.result && (
-                        <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full border bg-elite-primary/15 text-elite-primary-hover border-elite-primary/20">
-                          {match.result}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-white font-semibold font-heading text-lg">vs {match.opponentName}</h3>
-                    <div className="flex flex-col gap-1">
-                      <span className="flex items-center gap-2 text-sm text-slate-400">
-                        <Calendar className="w-3.5 h-3.5 text-slate-600" />
-                        {formatDateDisplay(match.date)}
-                        {match.time && (
-                          <>
-                            <Clock className="w-3.5 h-3.5 text-slate-600 ml-2" />
-                            <span>{match.time}h</span>
-                          </>
-                        )}
-                      </span>
-                      {match.location && (
-                        <span className="flex items-center gap-2 text-sm text-slate-400">
-                          <MapPin className="w-3.5 h-3.5 text-slate-600" />
-                          {match.location}
-                        </span>
-                      )}
-                    </div>
+              <EliteCard key={match.id} className="group flex items-center gap-4 hover:border-white/10 transition-all">
+                {/* Opponent Logo */}
+                {match.opponentLogoUrl ? (
+                  <img src={match.opponentLogoUrl} alt={match.opponentName} className="w-14 h-14 rounded-lg object-contain flex-shrink-0 bg-white/5 p-1" />
+                ) : (
+                  <div className="w-14 h-14 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                    <Trophy className="w-6 h-6 text-slate-600" />
                   </div>
+                )}
 
-                  {isAdmin && (
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openEdit(match)} className="p-1.5 text-slate-500 hover:text-elite-secondary hover:bg-elite-secondary/10 rounded-lg transition-colors">
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => handleDelete(match.id)} className="p-1.5 text-slate-500 hover:text-elite-accent hover:bg-elite-accent/10 rounded-lg transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 text-[11px] font-semibold rounded-full border ${compInfo.cls}`}>
+                      {compInfo.text}
+                    </span>
+                    {match.result && (
+                      <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full border bg-elite-primary/15 text-elite-primary-hover border-elite-primary/20">
+                        {match.result}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-white font-semibold font-heading text-lg">vs {match.opponentName}</h3>
+                  <div className="flex flex-col gap-1">
+                    <span className="flex items-center gap-2 text-sm text-slate-400">
+                      <Calendar className="w-3.5 h-3.5 text-slate-600" />
+                      {formatDateDisplay(match.date)}
+                      {match.time && (
+                        <>
+                          <Clock className="w-3.5 h-3.5 text-slate-600 ml-2" />
+                          <span>{match.time}h</span>
+                        </>
+                      )}
+                    </span>
+                    {match.location && (
+                      <span className="flex items-center gap-2 text-sm text-slate-400">
+                        <MapPin className="w-3.5 h-3.5 text-slate-600" />
+                        {match.location}
+                      </span>
+                    )}
+                  </div>
                 </div>
+
+                {isAdmin && (
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => openEdit(match)} className="p-1.5 text-slate-500 hover:text-elite-secondary hover:bg-elite-secondary/10 rounded-lg transition-colors">
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(match.id)} className="p-1.5 text-slate-500 hover:text-elite-accent hover:bg-elite-accent/10 rounded-lg transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </EliteCard>
             );
           })}
@@ -181,6 +189,70 @@ export default function MatchHubPage() {
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <EliteInput label="Rival *" required value={form.opponentName || ''} onChange={(e) => setForm({ ...form, opponentName: e.target.value })} placeholder="Nombre del equipo rival" />
+
+          {/* Opponent Logo */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Escudo del Rival</label>
+            {form.opponentLogoUrl && (
+              <div className="mb-2 flex items-center gap-3">
+                <img src={form.opponentLogoUrl} alt="Escudo" className="w-14 h-14 rounded-lg object-contain bg-white/5 p-1" />
+                <button type="button" onClick={() => setForm({ ...form, opponentLogoUrl: '' })} className="text-xs text-elite-accent hover:underline">Eliminar</button>
+              </div>
+            )}
+            {/* Previously used logos */}
+            {(() => {
+              const usedLogos = [...new Set(matches.map(m => m.opponentLogoUrl).filter(Boolean))] as string[];
+              return usedLogos.length > 0 ? (
+                <div className="mb-2">
+                  <p className="text-[10px] text-slate-500 mb-1.5">Escudos ya utilizados:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {usedLogos.map((logo, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setForm({ ...form, opponentLogoUrl: logo })}
+                        className={`w-10 h-10 rounded-lg p-0.5 border transition-all cursor-pointer ${form.opponentLogoUrl === logo ? 'border-elite-primary ring-2 ring-elite-primary/30' : 'border-white/10 hover:border-white/30 bg-white/5'}`}
+                      >
+                        <img src={logo} alt="Logo" className="w-full h-full object-contain rounded" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <div className="relative">
+                  <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <input
+                    type="url"
+                    className="w-full bg-elite-bg/80 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-elite-primary/60 text-sm"
+                    placeholder="URL del escudo..."
+                    value={form.opponentLogoUrl?.startsWith('data:') ? '' : (form.opponentLogoUrl || '')}
+                    onChange={(e) => setForm({ ...form, opponentLogoUrl: e.target.value })}
+                  />
+                </div>
+              </div>
+              <label className="flex items-center gap-1.5 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg cursor-pointer transition-colors text-sm text-slate-300">
+                <Upload className="w-3.5 h-3.5" />
+                <span>Subir</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => setForm({ ...form, opponentLogoUrl: reader.result as string });
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <EliteInput label="Fecha *" type="date" required value={form.date || ''} onChange={(e) => setForm({ ...form, date: e.target.value })} />
             <EliteInput label="Hora" type="time" value={form.time || ''} onChange={(e) => setForm({ ...form, time: e.target.value })} />
