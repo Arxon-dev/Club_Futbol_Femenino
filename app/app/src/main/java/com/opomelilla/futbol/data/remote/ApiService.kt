@@ -42,4 +42,7 @@ interface ApiService {
 
     @GET("news")
     suspend fun getNews(): List<com.opomelilla.futbol.data.remote.model.NewsDto>
+
+    @GET("roster")
+    suspend fun getRoster(): List<com.opomelilla.futbol.data.remote.model.RosterMemberDto>
 }
