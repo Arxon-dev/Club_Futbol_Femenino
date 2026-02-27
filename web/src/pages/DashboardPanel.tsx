@@ -1,21 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
-  PieChart, Pie, Cell,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 // @ts-ignore
 const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 interface StatsData {
-  attendance: {
-    totalEvents: number;
-    globalStats: {
-      ATTENDING: number;
-      NOT_ATTENDING: number;
-      PENDING: number;
-    }
-  };
   finances: {
     summary: {
       totalIncome: number;
@@ -29,7 +20,7 @@ interface StatsData {
   }
 }
 
-const COLORS = ['#10B981', '#EF4444', '#F59E0B']; // Green, Red, Amber
+
 
 export const DashboardPanel: React.FC = () => {
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -42,24 +33,17 @@ export const DashboardPanel: React.FC = () => {
       const FAKE_ADMIN_TOKEN = localStorage.getItem('token') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjRkYWRhNWZhLWIzNDctNDA5Yy1hZjY2LWEyMjk1M2ZhOTM2NyIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3MTcwODE4MCwiZXhwIjoxODAzMjY1NzgwfQ.u276z2WQf1VFurEyoT2wxYthu31NUPginGV067JG28w';
 
       try {
-        const [attRes, finRes] = await Promise.all([
-          fetch(`${BASE_API_URL}/stats/attendance`, {
-            headers: { 'Authorization': `Bearer ${FAKE_ADMIN_TOKEN}` }
-          }),
-          fetch(`${BASE_API_URL}/stats/finances`, {
-            headers: { 'Authorization': `Bearer ${FAKE_ADMIN_TOKEN}` }
-          })
-        ]);
+        const finRes = await fetch(`${BASE_API_URL}/stats/finances`, {
+          headers: { 'Authorization': `Bearer ${FAKE_ADMIN_TOKEN}` }
+        });
 
-        if (!attRes.ok || !finRes.ok) {
+        if (!finRes.ok) {
           throw new Error('Error fetching detailed statistics');
         }
 
-        const attendanceData = await attRes.json();
         const financeData = await finRes.json();
 
         setStats({
-          attendance: attendanceData,
           finances: financeData
         });
       } catch (err: any) {
@@ -80,13 +64,7 @@ export const DashboardPanel: React.FC = () => {
     return <div className="p-8 text-center text-red-500">Error: {error}</div>;
   }
 
-  const { attendance, finances } = stats;
-
-  const attendanceChartData = [
-    { name: 'Asistirán', value: attendance.globalStats.ATTENDING },
-    { name: 'No Asistirán', value: attendance.globalStats.NOT_ATTENDING },
-    { name: 'Pendientes', value: attendance.globalStats.PENDING }
-  ];
+  const { finances } = stats;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
@@ -116,47 +94,10 @@ export const DashboardPanel: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-500">Total Eventos</p>
-            <p className="text-3xl font-bold mt-1 text-gray-900">
-              {attendance.totalEvents}
-            </p>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-            🗓️
-          </div>
-        </div>
       </div>
 
       {/* Main Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* Attendance Breakdown */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800 mb-6">Desglose de Asistencias</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={attendanceChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {attendanceChartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend verticalAlign="bottom" height={36}/>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
 
         {/* Financial Distribution */}
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">

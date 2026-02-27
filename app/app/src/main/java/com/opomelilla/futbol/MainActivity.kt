@@ -29,9 +29,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 
@@ -43,7 +45,6 @@ class MainActivity : ComponentActivity() {
 
     // Store pending navigation from push notification
     private var pendingNavigateTo: String? = null
-    private var pendingEventId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +78,7 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry?.destination?.route
 
                 // If app was already open and we get a new intent, handle navigation directly
-                LaunchedEffect(pendingNavigateTo, pendingEventId) {
+                LaunchedEffect(pendingNavigateTo) {
                     if (currentRoute != "login" && currentRoute != null) {
                         val role = tokenManager.getRole()
                         navigateFromIntent(navController, role)
@@ -87,14 +88,26 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        if (currentRoute in listOf("events", "treasury", "profile")) {
+                        if (currentRoute in listOf("treasury", "profile", "president_letter", "match_hub", "social_hub")) {
                             NavigationBar {
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Filled.DateRange, contentDescription = "Eventos") },
-                                    label = { Text("Eventos") },
-                                    selected = currentRoute == "events",
+                                    icon = { Icon(Icons.Filled.DateRange, contentDescription = "Partidos") },
+                                    label = { Text("Partidos") },
+                                    selected = currentRoute == "match_hub",
                                     onClick = {
-                                        navController.navigate("events") {
+                                        navController.navigate("match_hub") {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                )
+                                NavigationBarItem(
+                                    icon = { Icon(Icons.Filled.Email, contentDescription = "Presidente") },
+                                    label = { Text("Presidente") },
+                                    selected = currentRoute == "president_letter",
+                                    onClick = {
+                                        navController.navigate("president_letter") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -142,25 +155,11 @@ class MainActivity : ComponentActivity() {
                                     if (pendingNavigateTo != null) {
                                         navigateFromIntent(navController, role)
                                     } else {
-                                        navController.navigate("events") {
+                                        navController.navigate("profile") {
                                             popUpTo("login") { inclusive = true }
                                         }
                                     }
                                 }
-                            )
-                        }
-                        composable("events") {
-                            com.opomelilla.futbol.ui.events.EventsScreen(
-                                onNavigateToAttendance = { eventId ->
-                                    navController.navigate("attendance/$eventId")
-                                }
-                            )
-                        }
-                        composable("attendance/{eventId}") { backStackEntry ->
-                            val eventId = backStackEntry.arguments?.getString("eventId") ?: return@composable
-                            com.opomelilla.futbol.ui.events.AttendanceScreen(
-                                eventId = eventId,
-                                onNavigateBack = { navController.popBackStack() }
                             )
                         }
                         composable("treasury") {
@@ -168,6 +167,15 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("profile") {
                             com.opomelilla.futbol.ui.profile.ProfileScreen()
+                        }
+                        composable("president_letter") {
+                            com.opomelilla.futbol.ui.president.PresidentLetterScreen()
+                        }
+                        composable("match_hub") {
+                            com.opomelilla.futbol.ui.matches.MatchHubScreen()
+                        }
+                        composable("social_hub") {
+                            com.opomelilla.futbol.ui.social.SocialHubScreen()
                         }
                     }
                 }
@@ -183,33 +191,29 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(intent: Intent?) {
         intent?.let {
             val navTo = it.getStringExtra("navigateTo")
-            val evId = it.getStringExtra("eventId")
             if (navTo != null) {
                 pendingNavigateTo = navTo
-                pendingEventId = evId
             }
         }
     }
 
     private fun navigateFromIntent(navController: androidx.navigation.NavController, role: String? = null) {
         val dest = pendingNavigateTo
-        val id = pendingEventId
         
         // Clear pending intent data
         pendingNavigateTo = null
-        pendingEventId = null
 
-        if (dest == "events") {
-            if (id != null && (role == "ADMIN" || role == "COACH")) {
-                // Navigate to specific event attendance for Admins/Coaches
-                navController.navigate("attendance/$id") {
-                    popUpTo("login") { inclusive = true }
-                }
-            } else {
-                // Navigate to events list for players (or if no ID)
-                navController.navigate("events") {
-                    popUpTo("login") { inclusive = true }
-                }
+        if (dest == "profile") {
+            navController.navigate("profile") {
+                popUpTo("login") { inclusive = true }
+            }
+        } else if (dest == "treasury") {
+            navController.navigate("treasury") {
+                popUpTo("login") { inclusive = true }
+            }
+        } else {
+             navController.navigate("profile") {
+                popUpTo("login") { inclusive = true }
             }
         }
     }

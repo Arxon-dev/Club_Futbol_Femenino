@@ -16,17 +16,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'API is running' });
 });
 
-app.get('/api/events_test', (req, res) => {
-  res.json({ message: 'Debug Events Router is Working!' });
-});
+
 
 // Routes Registration
 app.use('/api/auth', require('./src/routes/auth.routes'));
-app.use('/api/events', require('./src/routes/event.routes'));
 app.use('/api/finances', require('./src/routes/financeRoutes'));
 app.use('/api/stats', require('./src/routes/statsRoutes'));
 app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 app.use('/api/users', require('./src/routes/user.routes'));
+app.use('/api/president-letter', require('./src/routes/presidentLetter.routes'));
+app.use('/api/matches', require('./src/routes/match.routes'));
+app.use('/api/social-links', require('./src/routes/socialLink.routes'));
 
 
 const PORT = process.env.PORT || 3000;

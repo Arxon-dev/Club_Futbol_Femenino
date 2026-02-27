@@ -64,6 +64,9 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
 
+    // Coil
+    implementation(libs.coil.compose)
+
     // Retrofit & OkHttp
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)

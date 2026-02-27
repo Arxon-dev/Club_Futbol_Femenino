@@ -19,7 +19,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.opomelilla.futbol.data.remote.model.FinancialSummaryDto
 import com.opomelilla.futbol.data.remote.model.TransactionDto
 import com.opomelilla.futbol.data.remote.model.TreasuryDataDto
-import com.opomelilla.futbol.ui.events.formatIsoDate
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -214,5 +216,19 @@ fun TransactionCard(transaction: TransactionDto) {
                 color = amountColor
             )
         }
+    }
+}
+
+fun formatIsoDate(isoString: String?): String {
+    if (isoString.isNullOrEmpty()) return "Fecha desconocida"
+    return try {
+        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        parser.timeZone = TimeZone.getTimeZone("UTC")
+        val date = parser.parse(isoString)
+        val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        formatter.format(date!!)
+    } catch (e: Exception) {
+        // Fallback simple parsing if format is different
+        isoString.substringBefore("T")
     }
 }

@@ -6,32 +6,13 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import com.opomelilla.futbol.data.remote.model.LoginRequest
 import com.opomelilla.futbol.data.remote.model.LoginResponse
-import com.opomelilla.futbol.data.remote.model.EventsResponse
 
 interface ApiService {
 
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
-    @GET("events")
-    suspend fun getEvents(): com.opomelilla.futbol.data.remote.model.EventsResponse
 
-    @POST("events/{eventId}/attendance")
-    suspend fun setAttendance(
-        @retrofit2.http.Path("eventId") eventId: String,
-        @Body request: com.opomelilla.futbol.data.remote.model.SetAttendanceRequest
-    ): retrofit2.Response<Unit>
-
-    @GET("events/{eventId}/attendance")
-    suspend fun getEventAttendance(
-        @retrofit2.http.Path("eventId") eventId: String
-    ): com.opomelilla.futbol.data.remote.model.EventAttendanceResponse
-
-    @retrofit2.http.PUT("events/{eventId}/attendance/bulk")
-    suspend fun bulkUpdateAttendance(
-        @retrofit2.http.Path("eventId") eventId: String,
-        @Body request: com.opomelilla.futbol.data.remote.model.BulkAttendanceRequest
-    ): retrofit2.Response<Unit>
 
     @POST("auth/fcm-token")
     suspend fun sendFcmToken(@Body request: com.opomelilla.futbol.data.remote.model.FcmTokenRequest): retrofit2.Response<Unit>
@@ -49,4 +30,13 @@ interface ApiService {
     suspend fun getFinances(
         @retrofit2.http.Path("userId") userId: String
     ): com.opomelilla.futbol.data.remote.model.TreasuryDataDto
+
+    @GET("president-letter")
+    suspend fun getPresidentLetter(): com.opomelilla.futbol.data.remote.model.PresidentLetterDto
+
+    @GET("matches")
+    suspend fun getMatches(): List<com.opomelilla.futbol.data.remote.model.MatchDto>
+
+    @GET("social-links")
+    suspend fun getSocialLinks(): com.opomelilla.futbol.data.remote.model.SocialLinkDto
 }

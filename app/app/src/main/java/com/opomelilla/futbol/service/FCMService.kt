@@ -22,7 +22,6 @@ class FCMService : FirebaseMessagingService() {
         var title: String? = null
         var body: String? = null
         var navigateTo: String? = null
-        var eventId: String? = null
 
         // Check if message contains a notification payload (e.g. from Firebase Web Console).
         remoteMessage.notification?.let {
@@ -35,7 +34,6 @@ class FCMService : FirebaseMessagingService() {
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
             navigateTo = remoteMessage.data["navigateTo"]
-            eventId = remoteMessage.data["eventId"]
             
             // Extract title and body from data payload if available
             remoteMessage.data["title"]?.let { title = it }
@@ -43,7 +41,7 @@ class FCMService : FirebaseMessagingService() {
         }
 
         if (title != null || body != null) {
-            sendNotification(title, body, navigateTo, eventId)
+            sendNotification(title, body, navigateTo)
         }
     }
 
@@ -53,11 +51,10 @@ class FCMService : FirebaseMessagingService() {
         // We will implement this in the frontend Repository.
     }
 
-    private fun sendNotification(title: String?, messageBody: String?, navigateTo: String?, eventId: String?) {
+    private fun sendNotification(title: String?, messageBody: String?, navigateTo: String?) {
         val intent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             navigateTo?.let { putExtra("navigateTo", it) }
-            eventId?.let { putExtra("eventId", it) }
         }
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
@@ -77,38 +74,7 @@ class FCMService : FirebaseMessagingService() {
             .setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
 
-        // Add Attendance Action Buttons if eventId is provided (assuming it's an event notification)
-        if (eventId != null) {
-            val attendIntent = Intent(this, com.opomelilla.futbol.receiver.AttendanceReceiver::class.java).apply {
-                putExtra("eventId", eventId)
-                putExtra("action", "ATTENDING")
-                putExtra("notificationId", notificationId)
-            }
-            val attendPendingIntent = PendingIntent.getBroadcast(
-                this, 1, attendIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
 
-            val declineIntent = Intent(this, com.opomelilla.futbol.receiver.AttendanceReceiver::class.java).apply {
-                putExtra("eventId", eventId)
-                putExtra("action", "NOT_ATTENDING")
-                putExtra("notificationId", notificationId)
-            }
-            val declinePendingIntent = PendingIntent.getBroadcast(
-                this, 2, declineIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
-
-            notificationBuilder.addAction(
-                0, // No icon for modern Android
-                "Asistir",
-                attendPendingIntent
-            ).addAction(
-                0,
-                "No Asistir",
-                declinePendingIntent
-            )
-        }
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
