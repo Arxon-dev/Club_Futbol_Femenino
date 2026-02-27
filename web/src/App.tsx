@@ -8,6 +8,7 @@ import MatchHubPage from './pages/MatchHub';
 import SocialHubPage from './pages/SocialHub';
 import NewsPage from './pages/NewsPage';
 import RosterPage from './pages/RosterPage';
+import ChatPage from './pages/ChatPage';
 import Login from './pages/Login';
 import Layout from './components/layout/Layout';
 import { authService } from './services/authService';
@@ -47,6 +48,7 @@ function App() {
         <Route path="/social-hub" element={<ProtectedRoute><SocialHubPage /></ProtectedRoute>} />
         <Route path="/news" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
         <Route path="/roster" element={<ProtectedRoute><RosterPage /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
         <Route path="/directory" element={<ProtectedRoute><UsersPanel /></ProtectedRoute>} />
         <Route path="/treasury" element={<ProtectedRoute><Treasury /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPanel /></ProtectedRoute>} />

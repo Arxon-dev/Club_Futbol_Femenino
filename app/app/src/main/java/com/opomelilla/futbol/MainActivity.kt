@@ -32,12 +32,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 
@@ -92,7 +90,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        if (currentRoute in listOf("treasury", "profile", "president_letter", "match_hub", "social_hub", "news_feed", "roster_screen")) {
+                        if (currentRoute in listOf(
+                                "match_hub", "chat_screen", "roster_screen", "profile",
+                                "more_screen", "treasury", "president_letter", "news_feed", "social_hub"
+                            )) {
                             NavigationBar {
                                 NavigationBarItem(
                                     icon = { Icon(Icons.Filled.DateRange, contentDescription = "Partidos") },
@@ -107,11 +108,11 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Filled.Notifications, contentDescription = "Noticias") },
-                                    label = { Text("Noticias", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
-                                    selected = currentRoute == "news_feed",
+                                    icon = { Icon(Icons.Filled.Face, contentDescription = "Chat") },
+                                    label = { Text("Chat", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
+                                    selected = currentRoute == "chat_screen",
                                     onClick = {
-                                        navController.navigate("news_feed") {
+                                        navController.navigate("chat_screen") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -119,11 +120,11 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Filled.Email, contentDescription = "Presidente") },
-                                    label = { Text("Carta", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
-                                    selected = currentRoute == "president_letter",
+                                    icon = { Icon(Icons.Filled.Person, contentDescription = "Equipo") },
+                                    label = { Text("Equipo", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
+                                    selected = currentRoute == "roster_screen",
                                     onClick = {
-                                        navController.navigate("president_letter") {
+                                        navController.navigate("roster_screen") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -131,19 +132,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Filled.ShoppingCart, contentDescription = "Tesorería") },
-                                    label = { Text("Tesoro", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
-                                    selected = currentRoute == "treasury",
-                                    onClick = {
-                                        navController.navigate("treasury") {
-                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
-                                    }
-                                )
-                                NavigationBarItem(
-                                    icon = { Icon(Icons.Filled.Person, contentDescription = "Mi Perfil") },
+                                    icon = { Icon(Icons.Filled.Home, contentDescription = "Perfil") },
                                     label = { Text("Perfil", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
                                     selected = currentRoute == "profile",
                                     onClick = {
@@ -155,11 +144,11 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                                 NavigationBarItem(
-                                    icon = { Icon(Icons.Filled.Face, contentDescription = "Equipo") },
-                                    label = { Text("Equipo", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
-                                    selected = currentRoute == "roster_screen",
+                                    icon = { Icon(Icons.Filled.MoreVert, contentDescription = "Más") },
+                                    label = { Text("Más", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
+                                    selected = currentRoute in listOf("more_screen", "treasury", "president_letter", "news_feed", "social_hub"),
                                     onClick = {
-                                        navController.navigate("roster_screen") {
+                                        navController.navigate("more_screen") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -190,26 +179,38 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable("treasury") {
-                            com.opomelilla.futbol.ui.finances.TreasuryScreen()
+                        composable("match_hub") {
+                            com.opomelilla.futbol.ui.matches.MatchHubScreen()
+                        }
+                        composable("chat_screen") {
+                            com.opomelilla.futbol.ui.chat.ChatScreen()
+                        }
+                        composable("roster_screen") {
+                            com.opomelilla.futbol.ui.roster.RosterScreen()
                         }
                         composable("profile") {
                             com.opomelilla.futbol.ui.profile.ProfileScreen()
                         }
+                        composable("more_screen") {
+                            com.opomelilla.futbol.ui.more.MoreScreen(
+                                onNavigate = { route ->
+                                    navController.navigate(route) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            )
+                        }
+                        composable("treasury") {
+                            com.opomelilla.futbol.ui.finances.TreasuryScreen()
+                        }
                         composable("president_letter") {
                             com.opomelilla.futbol.ui.president.PresidentLetterScreen()
-                        }
-                        composable("match_hub") {
-                            com.opomelilla.futbol.ui.matches.MatchHubScreen()
-                        }
-                        composable("social_hub") {
-                            com.opomelilla.futbol.ui.social.SocialHubScreen()
                         }
                         composable("news_feed") {
                             com.opomelilla.futbol.ui.news.NewsScreen()
                         }
-                        composable("roster_screen") {
-                            com.opomelilla.futbol.ui.roster.RosterScreen()
+                        composable("social_hub") {
+                            com.opomelilla.futbol.ui.social.SocialHubScreen()
                         }
                     }
                 }

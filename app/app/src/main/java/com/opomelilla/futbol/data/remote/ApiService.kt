@@ -45,4 +45,10 @@ interface ApiService {
 
     @GET("roster")
     suspend fun getRoster(): List<com.opomelilla.futbol.data.remote.model.RosterMemberDto>
+
+    @GET("chat")
+    suspend fun getMessages(): List<com.opomelilla.futbol.data.remote.model.ChatMessageDto>
+
+    @POST("chat")
+    suspend fun sendMessage(@retrofit2.http.Body body: com.opomelilla.futbol.data.remote.model.SendMessageRequest): com.opomelilla.futbol.data.remote.model.ChatMessageDto
 }

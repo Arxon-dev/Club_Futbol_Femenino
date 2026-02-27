@@ -7,6 +7,7 @@ const PresidentLetter = require('./PresidentLetter');
 const Match = require('./Match');
 const SocialLink = require('./SocialLink');
 const News = require('./News');
+const ChatMessage = require('./ChatMessage');
 
 // Relationships
 
@@ -15,6 +16,9 @@ Transaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 User.hasOne(Profile, { onDelete: 'CASCADE' });
 Profile.belongsTo(User);
+
+User.hasMany(ChatMessage, { foreignKey: 'userId' });
+ChatMessage.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = {
   sequelize,
@@ -25,5 +29,6 @@ module.exports = {
   PresidentLetter,
   Match,
   SocialLink,
-  News
+  News,
+  ChatMessage
 };

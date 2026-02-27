@@ -29,6 +29,7 @@ app.use('/api/matches', require('./src/routes/match.routes'));
 app.use('/api/social-links', require('./src/routes/socialLink.routes'));
 app.use('/api/news', require('./src/routes/news.routes'));
 app.use('/api/roster', require('./src/routes/roster.routes'));
+app.use('/api/chat', require('./src/routes/chat.routes'));
 
 
 const PORT = process.env.PORT || 3000;
