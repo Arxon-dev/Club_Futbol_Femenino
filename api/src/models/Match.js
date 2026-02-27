@@ -16,7 +16,7 @@ const Match = sequelize.define('Match', {
     allowNull: false
   },
   opponentLogoUrl: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true
   },
   location: {
