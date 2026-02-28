@@ -22,3 +22,4 @@ local.properties
 # App specific
 app/build/
 app/app/build/
+app/app/google-services.json
