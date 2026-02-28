@@ -28,20 +28,23 @@ exports.getDashboardStats = async (req, res) => {
     const playerCount = await User.count({ where: { role: 'PLAYER' } });
     const coachCount = await User.count({ where: { role: 'COACH' } });
 
-    // 3. Next match
+    // 3. Next match — compare against start of today so same-day matches are still "upcoming"
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     let nextMatch = null;
     try {
       nextMatch = await Match.findOne({
-        where: { date: { [Op.gte]: new Date() } },
+        where: { date: { [Op.gte]: today } },
         order: [['date', 'ASC']]
       });
     } catch { /* Match table might not exist yet */ }
 
-    // 4. Recent matches (last 5)
+    // 4. Recent matches (before today)
     let recentMatches = [];
     try {
       recentMatches = await Match.findAll({
-        where: { date: { [Op.lt]: new Date() } },
+        where: { date: { [Op.lt]: today } },
         order: [['date', 'DESC']],
         limit: 5
       });
