@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +32,7 @@ import java.util.Locale
 
 @Composable
 fun MerchandisingScreen(
+    onAddProductClick: () -> Unit = {},
     viewModel: MerchandisingViewModel = hiltViewModel()
 ) {
     val products by viewModel.products.collectAsState()
@@ -38,97 +40,112 @@ fun MerchandisingScreen(
     val error by viewModel.error.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-    ) {
-        // Header
-        Text(
-            text = "Tienda",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-        Text(
-            text = "Merchandising oficial del club",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        // Category Filter Chips
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            viewModel.categories.forEach { category ->
-                FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = { viewModel.selectCategory(category) },
-                    label = {
-                        Text(
-                            text = category,
-                            fontSize = 13.sp,
-                            fontWeight = if (selectedCategory == category) FontWeight.Bold else FontWeight.Normal
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                        selectedLabelColor = MaterialTheme.colorScheme.primary
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                )
+    Scaffold(
+        floatingActionButton = {
+            if (viewModel.isAdmin) {
+                FloatingActionButton(
+                    onClick = onAddProductClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir Producto")
+                }
             }
         }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            // Header
+            Text(
+                text = "Tienda",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = "Merchandising oficial del club",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        // Content
-        if (isLoading && products.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
-        } else if (error != null) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                modifier = Modifier.fillMaxWidth()
+            // Category Filter Chips
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = error ?: "",
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.padding(16.dp)
-                )
+                viewModel.categories.forEach { category ->
+                    FilterChip(
+                        selected = selectedCategory == category,
+                        onClick = { viewModel.selectCategory(category) },
+                        label = {
+                            Text(
+                                text = category,
+                                fontSize = 13.sp,
+                                fontWeight = if (selectedCategory == category) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                }
             }
-        } else {
-            val filtered = viewModel.getFilteredProducts()
-            if (filtered.isEmpty()) {
+
+            // Content
+            if (isLoading && products.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Filled.ShoppingCart,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
-                            modifier = Modifier.size(56.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = if (selectedCategory == "Todas") "No hay productos disponibles."
-                            else "No hay productos en \"$selectedCategory\".",
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                        )
-                    }
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else if (error != null) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = error ?: "",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp)
-                ) {
-                    items(filtered) { product ->
-                        ProductCard(product = product)
+                val filtered = viewModel.getFilteredProducts()
+                if (filtered.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Filled.ShoppingCart,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                                modifier = Modifier.size(56.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = if (selectedCategory == "Todas") "No hay productos disponibles."
+                                else "No hay productos en \"$selectedCategory\".",
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(filtered) { product ->
+                            ProductCard(product = product)
+                        }
                     }
                 }
             }

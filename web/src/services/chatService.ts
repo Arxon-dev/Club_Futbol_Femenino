@@ -26,6 +26,7 @@ export interface ChatUser {
 export interface ChatMessage {
   id: string;
   userId: string;
+  receiverId: string | null;
   content: string;
   createdAt: string;
   user: ChatUser | null;
@@ -41,13 +42,33 @@ export const chatService = {
     return response.json();
   },
 
-  sendMessage: async (content: string): Promise<ChatMessage> => {
+  getPrivateMessages: async (otherUserId: string): Promise<ChatMessage[]> => {
+    const response = await fetch(`${API_URL}/private/${otherUserId}`, {
+      method: 'GET',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Error al obtener mensajes privados');
+    return response.json();
+  },
+
+  sendMessage: async (content: string, receiverId?: string): Promise<ChatMessage> => {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content, receiverId })
     });
-    if (!response.ok) throw new Error('Error al enviar mensaje');
+    if (!response.ok) {
+      const errData = await response.json().catch(() => null);
+      throw new Error(errData?.error || 'Error al enviar mensaje');
+    }
     return response.json();
+  },
+
+  deleteMessage: async (messageId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/${messageId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Error al eliminar mensaje');
   }
 };

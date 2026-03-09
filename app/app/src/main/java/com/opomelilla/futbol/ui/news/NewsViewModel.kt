@@ -27,6 +27,8 @@ class NewsViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    val isAdmin = tokenManager.getRole() == "admin" || tokenManager.getRole() == "superadmin"
+
     init {
         fetchNews()
     }

@@ -10,3 +10,12 @@ data class NewsDto(
     val published: Boolean,
     val createdAt: String
 )
+
+data class CreateNewsRequest(
+    val title: String,
+    val content: String,
+    val category: String,
+    val imageUrl: String? = null,
+    val author: String? = null,
+    val published: Boolean = true
+)

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { chatService, ChatMessage } from '../services/chatService';
 import { authService } from '../services/authService';
-import { Loader2, Send, MessageCircle } from 'lucide-react';
+import { Loader2, Send, MessageCircle, Trash2, ArrowLeft } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import EliteCard from '../components/ui/EliteCard';
 
@@ -13,11 +14,19 @@ export default function ChatPage() {
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUser = authService.getCurrentUser();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const privateUserId = searchParams.get('userId');
 
   const loadMessages = useCallback(async () => {
     try {
-      const data = await chatService.getMessages();
-      setMessages(data);
+      if (privateUserId) {
+        const data = await chatService.getPrivateMessages(privateUserId);
+        setMessages(data);
+      } else {
+        const data = await chatService.getMessages();
+        setMessages(data);
+      }
       setError('');
     } catch {
       setError('Error al cargar mensajes');
@@ -40,13 +49,23 @@ export default function ChatPage() {
     if (!newMessage.trim() || sending) return;
     setSending(true);
     try {
-      const msg = await chatService.sendMessage(newMessage.trim());
+      const msg = await chatService.sendMessage(newMessage.trim(), privateUserId || undefined);
       setMessages((prev) => [...prev, msg]);
       setNewMessage('');
-    } catch {
-      setError('Error al enviar mensaje');
+    } catch (err: any) {
+      setError(err.message || 'Error al enviar mensaje');
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('¿Seguro que quieres eliminar este mensaje?')) return;
+    try {
+      await chatService.deleteMessage(id);
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+    } catch {
+      setError('Error al eliminar mensaje');
     }
   };
 
@@ -97,7 +116,21 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)] animate-slide-up">
-      <PageHeader title="Chat del Club" subtitle="Canal de comunicación del equipo." />
+      <div className="flex items-center gap-4 mb-4">
+        {privateUserId && (
+          <button
+            onClick={() => navigate('/chat')}
+            className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-white"
+            title="Volver al Chat Global"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        )}
+        <PageHeader 
+          title={privateUserId ? "Chat Privado" : "Chat del Club"} 
+          subtitle={privateUserId ? "Comunicación directa." : "Canal de comunicación global del equipo."} 
+        />
+      </div>
 
       {error && (
         <div className="mb-2 px-4 py-2 bg-red-500/10 text-red-400 rounded-lg text-sm">{error}</div>
@@ -122,29 +155,41 @@ export default function ChatPage() {
                 </div>
                 {group.msgs.map((msg) => {
                   const own = isOwn(msg);
+                  const canDelete = currentUser?.role === 'ADMIN';
                   return (
-                    <div key={msg.id} className={`flex ${own ? 'justify-end' : 'justify-start'} mb-2`}>
-                      <div
-                        className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                          own
-                            ? 'bg-elite-primary/15 border border-elite-primary/20 rounded-br-sm'
-                            : 'bg-white/5 border border-white/5 rounded-bl-sm'
-                        }`}
-                      >
-                        {!own && (
-                          <p className="text-[11px] font-semibold text-elite-secondary mb-0.5">
-                            {getUserName(msg)}
+                    <div key={msg.id} className={`flex ${own ? 'justify-end' : 'justify-start'} mb-2 group/msg w-full`}>
+                      <div className={`flex items-end gap-2 max-w-[85%] ${own ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div
+                          className={`rounded-2xl px-4 py-2 ${
+                            own
+                              ? 'bg-elite-primary/15 border border-elite-primary/20 rounded-br-sm'
+                              : 'bg-white/5 border border-white/5 rounded-bl-sm'
+                          }`}
+                        >
+                          {!own && (
+                            <p className="text-[11px] font-semibold text-elite-secondary mb-0.5">
+                              {getUserName(msg)}
+                            </p>
+                          )}
+                          {own && (
+                            <p className="text-[11px] font-semibold text-elite-primary/70 mb-0.5 text-right">
+                              Tú
+                            </p>
+                          )}
+                          <p className="text-sm text-white/90 whitespace-pre-wrap break-words">{msg.content}</p>
+                          <p className={`text-[10px] mt-1 ${own ? 'text-elite-primary/50 text-right' : 'text-slate-600'}`}>
+                            {formatTime(msg.createdAt)}
                           </p>
+                        </div>
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(msg.id)}
+                            className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover/msg:opacity-100"
+                            title="Eliminar mensaje"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         )}
-                        {own && (
-                          <p className="text-[11px] font-semibold text-elite-primary/70 mb-0.5 text-right">
-                            Tú
-                          </p>
-                        )}
-                        <p className="text-sm text-white/90 whitespace-pre-wrap break-words">{msg.content}</p>
-                        <p className={`text-[10px] mt-1 ${own ? 'text-elite-primary/50 text-right' : 'text-slate-600'}`}>
-                          {formatTime(msg.createdAt)}
-                        </p>
                       </div>
                     </div>
                   );

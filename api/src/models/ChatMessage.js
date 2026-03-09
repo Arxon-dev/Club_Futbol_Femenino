@@ -11,6 +11,10 @@ const ChatMessage = sequelize.define('ChatMessage', {
     type: DataTypes.UUID,
     allowNull: false
   },
+  receiverId: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
   content: {
     type: DataTypes.TEXT,
     allowNull: false

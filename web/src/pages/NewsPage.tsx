@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { newsService, NewsArticle } from '../services/newsService';
 import { authService } from '../services/authService';
-import { Plus, Calendar, Edit2, Trash2, Loader2, AlertCircle, Newspaper, Tag } from 'lucide-react';
+import { uploadGeneralPhoto } from '../services/supabaseClient';
+import { Plus, Calendar, Edit2, Trash2, Loader2, AlertCircle, Newspaper, Tag, Camera } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import EliteCard from '../components/ui/EliteCard';
 import EliteButton from '../components/ui/EliteButton';
 import EliteModal from '../components/ui/EliteModal';
 import { EliteInput, EliteSelect, EliteTextarea } from '../components/ui/EliteInput';
+import { useRef } from 'react';
 
 const emptyArticle: Partial<NewsArticle> = { title: '', content: '', imageUrl: '', category: 'General', author: '' };
 
@@ -26,6 +28,10 @@ export default function NewsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const user = authService.getCurrentUser();
   const isAdmin = user?.role === 'ADMIN';
 
@@ -40,10 +46,18 @@ export default function NewsPage() {
     finally { setLoading(false); }
   };
 
-  const openCreate = () => { setEditingArticle(null); setForm(emptyArticle); setModalOpen(true); };
+  const openCreate = () => { 
+    setEditingArticle(null); 
+    setForm(emptyArticle); 
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setModalOpen(true); 
+  };
   const openEdit = (a: NewsArticle) => {
     setEditingArticle(a);
     setForm({ title: a.title, content: a.content, imageUrl: a.imageUrl || '', category: a.category, author: a.author || '' });
+    setPhotoFile(null);
+    setPhotoPreview(a.imageUrl || null);
     setModalOpen(true);
   };
 
@@ -51,8 +65,14 @@ export default function NewsPage() {
     e.preventDefault();
     setSaving(true); setError('');
     try {
-      if (editingArticle) { await newsService.updateNews(editingArticle.id, form); }
-      else { await newsService.createNews(form); }
+      let imageUrl = form.imageUrl;
+      if (photoFile) {
+        imageUrl = await uploadGeneralPhoto(photoFile);
+      }
+      const payload = { ...form, imageUrl };
+
+      if (editingArticle) { await newsService.updateNews(editingArticle.id, payload); }
+      else { await newsService.createNews(payload); }
       setModalOpen(false);
       await loadNews();
     } catch (err: any) { setError(err.message || 'Error'); }
@@ -177,6 +197,39 @@ export default function NewsPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <EliteInput label="Título *" required value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Título de la noticia" />
           <EliteTextarea label="Contenido *" required rows={6} value={form.content || ''} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Escribe el contenido de la noticia..." />
+          
+          <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-white/10 rounded-xl bg-elite-surface cursor-pointer group hover:border-elite-primary/40 transition-colors"
+               onClick={() => fileInputRef.current?.click()}>
+            {photoPreview ? (
+              <div className="relative w-full h-32 rounded-lg overflow-hidden flex justify-center bg-black/50">
+                <img src={photoPreview} alt="Preview" className="h-full object-contain" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
+                  <Camera className="w-6 h-6 text-white mb-1" />
+                  <span className="text-xs text-white">Cambiar Imagen</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-4 flex flex-col items-center opacity-70 group-hover:opacity-100">
+                <Camera className="w-8 h-8 text-slate-400 mb-2" />
+                <span className="text-sm font-medium text-slate-300">Añadir Imagen Principal</span>
+                <span className="text-xs text-slate-500 mt-1">Haz clic para subir (JPG, PNG)</span>
+              </div>
+            )}
+            <input 
+              ref={fileInputRef} type="file" accept="image/*" className="hidden" 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) { setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file)); }
+              }} 
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="h-px bg-white/5 flex-1"></div>
+            <span className="text-xs text-slate-500">O introduce URL manual</span>
+            <div className="h-px bg-white/5 flex-1"></div>
+          </div>
+
           <EliteInput label="URL de Imagen (opcional)" type="url" value={form.imageUrl || ''} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://...imagen.jpg" />
           <div className="grid grid-cols-2 gap-3">
             <EliteSelect label="Categoría" value={form.category || 'General'} onChange={(e) => setForm({ ...form, category: e.target.value })}>

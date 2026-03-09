@@ -15,12 +15,18 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val passwordState by viewModel.passwordState.collectAsState()
+    val context = LocalContext.current
 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -31,6 +37,9 @@ fun ProfileScreen(
     var position by remember { mutableStateOf("") }
     var medicalInfo by remember { mutableStateOf("") }
     var role by remember { mutableStateOf("") }
+
+    var oldPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
 
     val dateFormatDisplay = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateFormatApi = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -70,6 +79,15 @@ fun ProfileScreen(
             dorsal = profile.dorsal?.toString() ?: ""
             position = profile.position ?: ""
             medicalInfo = profile.medicalInfo ?: ""
+        }
+    }
+
+    LaunchedEffect(passwordState) {
+        if (passwordState is PasswordChangeState.Success) {
+            Toast.makeText(context, "Contraseña actualizada exitosamente", Toast.LENGTH_SHORT).show()
+            oldPassword = ""
+            newPassword = ""
+            viewModel.resetPasswordState()
         }
     }
 
@@ -274,6 +292,55 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Guardar Cambios")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Cambiar Contraseña",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    OutlinedTextField(
+                        value = oldPassword,
+                        onValueChange = { oldPassword = it },
+                        label = { Text("Contraseña Actual") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        label = { Text("Nueva Contraseña") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (passwordState is PasswordChangeState.Error) {
+                        Text(
+                            text = (passwordState as PasswordChangeState.Error).message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+
+                    Button(
+                        onClick = { viewModel.changePassword(oldPassword, newPassword) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                        enabled = oldPassword.isNotBlank() && newPassword.isNotBlank() && passwordState !is PasswordChangeState.Loading
+                    ) {
+                        if (passwordState is PasswordChangeState.Loading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onSecondary)
+                        } else {
+                            Text("Actualizar Contraseña")
+                        }
                     }
                 }
             }

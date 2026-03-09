@@ -20,5 +20,6 @@ data class ChatMessageDto(
 )
 
 data class SendMessageRequest(
-    val content: String
+    val content: String,
+    val receiverId: String? = null
 )

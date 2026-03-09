@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -30,6 +31,7 @@ import java.util.TimeZone
 
 @Composable
 fun NewsScreen(
+    onAddNewsClick: () -> Unit = {},
     viewModel: NewsViewModel = hiltViewModel()
 ) {
     val news by viewModel.news.collectAsState()
@@ -48,55 +50,70 @@ fun NewsScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Noticias",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Text(
-            text = "Últimas novedades del club",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+    Scaffold(
+        floatingActionButton = {
+            if (viewModel.isAdmin) {
+                FloatingActionButton(
+                    onClick = onAddNewsClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir Noticia")
+                }
+            }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Noticias",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text(
+                text = "Últimas novedades del club",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
 
-        if (isLoading && news.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
-        } else if (error != null) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = error ?: "",
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        } else if (news.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "No hay noticias publicadas.",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
-            }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(news) { article ->
-                    NewsCard(article = article)
+            if (isLoading && news.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else if (error != null) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = error ?: "",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else if (news.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No hay noticias publicadas.",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    )
+                }
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(news) { article ->
+                        NewsCard(article = article)
+                    }
                 }
             }
         }

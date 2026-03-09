@@ -17,6 +17,13 @@ sealed class ProfileUiState {
     data class Error(val message: String) : ProfileUiState()
 }
 
+sealed class PasswordChangeState {
+    object Idle : PasswordChangeState()
+    object Loading : PasswordChangeState()
+    object Success : PasswordChangeState()
+    data class Error(val message: String) : PasswordChangeState()
+}
+
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val apiService: ApiService,
@@ -25,6 +32,9 @@ class ProfileViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     val uiState: StateFlow<ProfileUiState> = _uiState
+
+    private val _passwordState = MutableStateFlow<PasswordChangeState>(PasswordChangeState.Idle)
+    val passwordState: StateFlow<PasswordChangeState> = _passwordState
 
     init {
         loadProfile()
@@ -72,5 +82,30 @@ class ProfileViewModel @Inject constructor(
                 _uiState.value = ProfileUiState.Error(e.message ?: "Failed to update profile")
             }
         }
+    }
+    fun changePassword(oldPass: String, newPass: String) {
+        viewModelScope.launch {
+            _passwordState.value = PasswordChangeState.Loading
+            try {
+                val response = apiService.changePassword(
+                    com.opomelilla.futbol.data.remote.model.ChangePasswordRequest(
+                        oldPassword = oldPass,
+                        newPassword = newPass
+                    )
+                )
+                if (response.isSuccessful) {
+                    _passwordState.value = PasswordChangeState.Success
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    _passwordState.value = PasswordChangeState.Error("Error: $errorBody")
+                }
+            } catch (e: Exception) {
+                _passwordState.value = PasswordChangeState.Error(e.message ?: "Error al cambiar contraseña")
+            }
+        }
+    }
+
+    fun resetPasswordState() {
+        _passwordState.value = PasswordChangeState.Idle
     }
 }

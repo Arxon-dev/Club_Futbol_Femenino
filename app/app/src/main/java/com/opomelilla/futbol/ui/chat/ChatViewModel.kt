@@ -13,12 +13,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.lifecycle.SavedStateHandle
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     val tokenManager: TokenManager,
     private val apiService: ApiService
 ) : ViewModel() {
+
+    val targetUserId: String? = savedStateHandle.get<String>("userId")?.takeIf { it.isNotBlank() }
+    val targetUserName: String? = savedStateHandle.get<String>("userName")?.takeIf { it.isNotBlank() }
 
     private val _messages = MutableStateFlow<List<ChatMessageDto>>(emptyList())
     val messages: StateFlow<List<ChatMessageDto>> = _messages.asStateFlow()
@@ -42,7 +47,7 @@ class ChatViewModel @Inject constructor(
             _isLoading.value = _messages.value.isEmpty()
             _error.value = null
             try {
-                _messages.value = apiService.getMessages()
+                _messages.value = apiService.getMessages(targetUserId)
             } catch (e: Exception) {
                 if (_messages.value.isEmpty()) {
                     _error.value = "Error al cargar mensajes: ${e.message}"
@@ -58,7 +63,7 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             _isSending.value = true
             try {
-                val msg = apiService.sendMessage(SendMessageRequest(content.trim()))
+                val msg = apiService.sendMessage(SendMessageRequest(content.trim(), targetUserId))
                 _messages.value = _messages.value + msg
             } catch (e: Exception) {
                 _error.value = "Error al enviar: ${e.message}"
@@ -68,12 +73,23 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    fun deleteMessage(id: Int) {
+        viewModelScope.launch {
+            try {
+                apiService.deleteMessage(id)
+                _messages.value = _messages.value.filter { it.id.toInt() != id }
+            } catch (e: Exception) {
+                _error.value = "Error al eliminar: ${e.message}"
+            }
+        }
+    }
+
     private fun startPolling() {
         viewModelScope.launch {
             while (true) {
                 delay(5000)
                 try {
-                    _messages.value = apiService.getMessages()
+                    _messages.value = apiService.getMessages(targetUserId)
                 } catch (_: Exception) { }
             }
         }

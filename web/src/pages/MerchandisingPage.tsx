@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { productService, Product } from '../services/productService';
 import { authService } from '../services/authService';
+import { uploadGeneralPhoto } from '../services/supabaseClient';
 import {
   Plus, Edit2, Trash2, Loader2, AlertCircle, ShoppingBag,
-  Tag, ExternalLink, Check, X as XIcon
+  Tag, ExternalLink, Check, X as XIcon, Camera
 } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import EliteCard from '../components/ui/EliteCard';
 import EliteButton from '../components/ui/EliteButton';
 import EliteModal from '../components/ui/EliteModal';
 import { EliteInput, EliteSelect, EliteTextarea } from '../components/ui/EliteInput';
+import { useRef } from 'react';
 
 const emptyProduct: Partial<Product> = {
   name: '', description: '', price: 0, imageUrl: '', category: 'Otros',
@@ -35,6 +37,10 @@ export default function MerchandisingPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [activeCategory, setActiveCategory] = useState('Todas');
+  
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const user = authService.getCurrentUser();
   const isAdmin = user?.role === 'ADMIN';
@@ -61,6 +67,8 @@ export default function MerchandisingPage() {
     setForm(emptyProduct);
     setSizesInput('');
     setError('');
+    setPhotoFile(null);
+    setPhotoPreview(null);
     setModalOpen(true);
   };
 
@@ -74,6 +82,8 @@ export default function MerchandisingPage() {
     });
     setSizesInput((p.sizes || []).join(', '));
     setError('');
+    setPhotoFile(null);
+    setPhotoPreview(p.imageUrl || null);
     setModalOpen(true);
   };
 
@@ -85,7 +95,13 @@ export default function MerchandisingPage() {
         .split(',')
         .map(s => s.trim())
         .filter(Boolean);
-      const payload = { ...form, sizes: parsedSizes };
+        
+      let imageUrl = form.imageUrl;
+      if (photoFile) {
+        imageUrl = await uploadGeneralPhoto(photoFile);
+      }
+        
+      const payload = { ...form, sizes: parsedSizes, imageUrl };
 
       if (editingProduct) {
         await productService.updateProduct(editingProduct.id, payload);
@@ -304,6 +320,47 @@ export default function MerchandisingPage() {
               <option value="Otros">Otros</option>
             </EliteSelect>
           </div>
+          
+          <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-white/10 rounded-xl bg-elite-surface cursor-pointer group hover:border-elite-primary/40 transition-colors"
+               onClick={() => fileInputRef.current?.click()}>
+            
+            {photoPreview ? (
+              <div className="relative w-full h-32 rounded-lg overflow-hidden flex justify-center bg-black/50">
+                <img src={photoPreview} alt="Preview" className="h-full object-contain" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
+                  <Camera className="w-6 h-6 text-white mb-1" />
+                  <span className="text-xs text-white">Cambiar Imagen</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-4 flex flex-col items-center opacity-70 group-hover:opacity-100">
+                <Camera className="w-8 h-8 text-slate-400 mb-2" />
+                <span className="text-sm font-medium text-slate-300">Añadir Imagen</span>
+                <span className="text-xs text-slate-500 mt-1">Haz clic para subir (JPG, PNG)</span>
+              </div>
+            )}
+            
+            <input 
+              ref={fileInputRef} 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setPhotoFile(file);
+                  setPhotoPreview(URL.createObjectURL(file));
+                }
+              }} 
+            />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="h-px bg-white/5 flex-1"></div>
+            <span className="text-xs text-slate-500">O introduce URL manual</span>
+            <div className="h-px bg-white/5 flex-1"></div>
+          </div>
+
           <EliteInput
             label="URL de Imagen (opcional)"
             type="url"

@@ -49,5 +49,26 @@ export const authService = {
     } catch {
       return null;
     }
+  },
+
+  async changePassword(oldPassword: string, newPassword: string) {
+    const token = this.getToken();
+    if (!token) throw new Error('No estás autenticado');
+
+    const response = await fetch(`${API_URL}/auth/change-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ oldPassword, newPassword }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Error al cambiar contraseña');
+    }
+
+    return await response.json();
   }
 };

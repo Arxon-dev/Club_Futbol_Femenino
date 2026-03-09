@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import android.os.Build
 import android.Manifest
 import android.content.Intent
@@ -123,7 +124,7 @@ class MainActivity : ComponentActivity() {
                                 NavigationBarItem(
                                     icon = { Icon(Icons.Filled.Face, contentDescription = "Chat") },
                                     label = { Text("Chat", maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 11.sp) },
-                                    selected = currentRoute == "chat_screen",
+                                    selected = currentRoute?.startsWith("chat_screen") == true,
                                     onClick = {
                                         navController.navigate("chat_screen") {
                                             popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -197,11 +198,25 @@ class MainActivity : ComponentActivity() {
                         composable("match_hub") {
                             com.opomelilla.futbol.ui.matches.MatchHubScreen()
                         }
-                        composable("chat_screen") {
-                            com.opomelilla.futbol.ui.chat.ChatScreen()
+                        composable(
+                            route = "chat_screen?userId={userId}&userName={userName}",
+                            arguments = listOf(
+                                navArgument("userId") { defaultValue = "" },
+                                navArgument("userName") { defaultValue = "" }
+                            )
+                        ) {
+                            com.opomelilla.futbol.ui.chat.ChatScreen(
+                                onBackClick = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                         composable("roster_screen") {
-                            com.opomelilla.futbol.ui.roster.RosterScreen()
+                            com.opomelilla.futbol.ui.roster.RosterScreen(
+                                onNavigateToChat = { targetUserId, targetUserName ->
+                                    navController.navigate("chat_screen?userId=$targetUserId&userName=$targetUserName")
+                                }
+                            )
                         }
                         composable("profile") {
                             com.opomelilla.futbol.ui.profile.ProfileScreen()
@@ -222,13 +237,35 @@ class MainActivity : ComponentActivity() {
                             com.opomelilla.futbol.ui.president.PresidentLetterScreen()
                         }
                         composable("news_feed") {
-                            com.opomelilla.futbol.ui.news.NewsScreen()
+                            com.opomelilla.futbol.ui.news.NewsScreen(
+                                onAddNewsClick = {
+                                    navController.navigate("add_news_screen")
+                                }
+                            )
+                        }
+                        composable("add_news_screen") {
+                            com.opomelilla.futbol.ui.news.AddNewsScreen(
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                         composable("social_hub") {
                             com.opomelilla.futbol.ui.social.SocialHubScreen()
                         }
                         composable("merchandising") {
-                            com.opomelilla.futbol.ui.merchandising.MerchandisingScreen()
+                            com.opomelilla.futbol.ui.merchandising.MerchandisingScreen(
+                                onAddProductClick = {
+                                    navController.navigate("add_product_screen")
+                                }
+                            )
+                        }
+                        composable("add_product_screen") {
+                            com.opomelilla.futbol.ui.merchandising.AddProductScreen(
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                     }
                 }

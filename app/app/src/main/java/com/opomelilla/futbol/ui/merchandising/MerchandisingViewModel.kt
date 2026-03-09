@@ -2,6 +2,7 @@ package com.opomelilla.futbol.ui.merchandising
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.opomelilla.futbol.data.local.TokenManager
 import com.opomelilla.futbol.data.remote.ApiService
 import com.opomelilla.futbol.data.remote.model.ProductDto
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,6 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MerchandisingViewModel @Inject constructor(
+    private val tokenManager: TokenManager,
     private val apiService: ApiService
 ) : ViewModel() {
 
@@ -27,6 +29,8 @@ class MerchandisingViewModel @Inject constructor(
 
     private val _selectedCategory = MutableStateFlow("Todas")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
+
+    val isAdmin = tokenManager.getRole() == "admin" || tokenManager.getRole() == "superadmin"
 
     val categories = listOf("Todas", "Camisetas", "Accesorios", "Equipamiento", "Otros")
 

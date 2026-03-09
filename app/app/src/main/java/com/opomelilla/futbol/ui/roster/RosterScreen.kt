@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +28,8 @@ import com.opomelilla.futbol.data.remote.model.RosterMemberDto
 
 @Composable
 fun RosterScreen(
-    viewModel: RosterViewModel = hiltViewModel()
+    viewModel: RosterViewModel = hiltViewModel(),
+    onNavigateToChat: (userId: String, userName: String) -> Unit = { _, _ -> }
 ) {
     val roster by viewModel.roster.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -99,7 +102,7 @@ fun RosterScreen(
                         SectionHeader(title = "Jugadoras", count = players.size)
                     }
                     items(players) { member ->
-                        RosterCard(member = member)
+                        RosterCard(member = member, onChatClick = { onNavigateToChat(member.id, it) })
                     }
                 }
                 if (staff.isNotEmpty()) {
@@ -108,7 +111,7 @@ fun RosterScreen(
                         SectionHeader(title = "Cuerpo Técnico", count = staff.size)
                     }
                     items(staff) { member ->
-                        RosterCard(member = member, isStaff = true)
+                        RosterCard(member = member, isStaff = true, onChatClick = { onNavigateToChat(member.id, it) })
                     }
                 }
             }
@@ -145,7 +148,7 @@ fun SectionHeader(title: String, count: Int) {
 }
 
 @Composable
-fun RosterCard(member: RosterMemberDto, isStaff: Boolean = false) {
+fun RosterCard(member: RosterMemberDto, isStaff: Boolean = false, onChatClick: (userName: String) -> Unit = {}) {
     val profile = member.profile
     val firstName = profile?.firstName ?: ""
     val lastName = profile?.lastName ?: ""
@@ -236,7 +239,23 @@ fun RosterCard(member: RosterMemberDto, isStaff: Boolean = false) {
                     text = "#$dorsal",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
+
+            // Chat Action
+            IconButton(
+                onClick = { onChatClick("$firstName $lastName".trim()) },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Email,
+                    contentDescription = "Chat",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

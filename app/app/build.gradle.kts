@@ -21,6 +21,9 @@ android {
         versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SUPABASE_URL", "\"https://mduuiuecofrbzyyvxxyi.supabase.co\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kdXVpdWVjb2ZyYnp5eXZ4eHlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2MjI0MDgsImV4cCI6MjA4NzE5ODQwOH0.gaRprKARb-ar5Onp2N3_prCsLmhhfjvNWvyiS_ZAhEA\"")
     }
 
     signingConfigs {
@@ -51,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

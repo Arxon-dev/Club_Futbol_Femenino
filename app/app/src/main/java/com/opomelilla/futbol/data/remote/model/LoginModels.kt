@@ -21,3 +21,8 @@ data class FcmTokenRequest(
     @com.google.gson.annotations.SerializedName("fcmToken")
     val token: String
 )
+
+data class ChangePasswordRequest(
+    val oldPassword: String,
+    val newPassword: String
+)

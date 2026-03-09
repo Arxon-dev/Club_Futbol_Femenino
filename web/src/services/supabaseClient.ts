@@ -37,3 +37,24 @@ export async function uploadProfilePhoto(file: File, userId: string): Promise<st
   // Append timestamp to bust cache
   return `${data.publicUrl}?t=${Date.now()}`;
 }
+
+const GENERAL_BUCKET = 'general-photos';
+
+/**
+ * Sube una foto general (Noticias, Productos)
+ * Retorna la URL pública de la imagen.
+ */
+export async function uploadGeneralPhoto(file: File): Promise<string> {
+  const supabase = getSupabase();
+  const ext = file.name.split('.').pop() || 'jpg';
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(GENERAL_BUCKET)
+    .upload(fileName, file, { contentType: file.type });
+
+  if (error) throw new Error(`Error al subir imagen: ${error.message}`);
+
+  const { data } = supabase.storage.from(GENERAL_BUCKET).getPublicUrl(fileName);
+  return `${data.publicUrl}?t=${Date.now()}`;
+}

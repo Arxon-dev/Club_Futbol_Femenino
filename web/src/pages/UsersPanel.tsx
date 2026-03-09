@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { userService } from '../services/userService';
 import { uploadProfilePhoto } from '../services/supabaseClient';
 import { Plus, Loader2, UserCircle, Camera } from 'lucide-react';
@@ -8,6 +9,7 @@ import EliteButton from '../components/ui/EliteButton';
 import EliteTable from '../components/ui/EliteTable';
 import EliteModal from '../components/ui/EliteModal';
 import { EliteInput, EliteSelect, EliteTextarea } from '../components/ui/EliteInput';
+import { authService } from '../services/authService';
 
 interface UserProfile {
   firstName?: string;
@@ -41,6 +43,14 @@ export default function UsersPanel() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Status for password change
+  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
+
+  const navigate = useNavigate();
+  const currentUser = authService.getCurrentUser();
+
   useEffect(() => { loadUsers(); }, []);
 
   const loadUsers = async () => {
@@ -63,6 +73,9 @@ export default function UsersPanel() {
     });
     setPhotoFile(null);
     setPhotoPreview(user.profile?.photoUrl || null);
+    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordMessage({ type: '', text: '' });
+    setIsChangingPassword(false);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -97,6 +110,25 @@ export default function UsersPanel() {
       setNewUserFormData({ email: '', password: '', role: 'PLAYER', firstName: '', lastName: '' });
       await loadUsers();
     } catch (err: any) { alert('Error: ' + err.message); }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMessage({ type: '', text: '' });
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordMessage({ type: 'error', text: 'Las contraseñas nuevas no coinciden' });
+      return;
+    }
+    
+    try {
+      await authService.changePassword(passwordData.oldPassword, passwordData.newPassword);
+      setPasswordMessage({ type: 'success', text: 'Contraseña actualizada con éxito' });
+      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      setTimeout(() => setIsChangingPassword(false), 2000);
+    } catch (err: any) {
+      setPasswordMessage({ type: 'error', text: err.message });
+    }
   };
 
   const roleBadge = (role: string) => {
@@ -172,12 +204,22 @@ export default function UsersPanel() {
       header: '',
       className: 'text-right',
       render: (user: User) => (
-        <button
-          onClick={() => openEditor(user)}
-          className="text-sm text-elite-secondary hover:text-elite-secondary/80 font-medium transition-colors"
-        >
-          Editar
-        </button>
+        <div className="flex justify-end gap-3">
+          {currentUser?.id !== user.id && (
+            <button
+              onClick={() => navigate(`/chat?userId=${user.id}`)}
+              className="text-sm text-elite-primary hover:text-elite-primary-hover font-medium transition-colors"
+            >
+              Mensaje
+            </button>
+          )}
+          <button
+            onClick={() => openEditor(user)}
+            className="text-sm text-elite-secondary hover:text-elite-secondary/80 font-medium transition-colors"
+          >
+            Editar
+          </button>
+        </div>
       )
     },
   ];
@@ -262,6 +304,35 @@ export default function UsersPanel() {
             </div>
           )}
           <EliteTextarea label="Información Médica / Alergias" rows={3} value={formData.medicalInfo || ''} onChange={(e) => setFormData({ ...formData, medicalInfo: e.target.value })} placeholder="Alergias, medicamentos, lesiones..." />
+          
+          {currentUser?.id === editingUser?.id && !isChangingPassword && (
+            <div className="pt-2">
+              <button type="button" onClick={() => setIsChangingPassword(true)} className="text-sm font-medium text-elite-primary hover:text-elite-primary-hover transition-colors">
+                Cambiar Contraseña
+              </button>
+            </div>
+          )}
+
+          {isChangingPassword && (
+            <div className="bg-elite-surface border border-white/5 rounded-xl p-4 mt-4 space-y-3">
+              <h4 className="text-sm font-medium text-white mb-2">Cambiar Contraseña</h4>
+              {passwordMessage.text && (
+                <div className={`p-2 rounded-lg text-xs ${passwordMessage.type === 'error' ? 'bg-elite-accent/10 text-elite-accent' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                  {passwordMessage.text}
+                </div>
+              )}
+              <EliteInput type="password" label="Contraseña Actual" value={passwordData.oldPassword} onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })} />
+              <div className="grid grid-cols-2 gap-3">
+                <EliteInput type="password" label="Nueva Contraseña" value={passwordData.newPassword} onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })} />
+                <EliteInput type="password" label="Confirmar Nueva" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })} />
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
+                <EliteButton type="button" variant="ghost" className="!py-2 !px-3 !text-xs" onClick={() => setIsChangingPassword(false)}>Ocultar</EliteButton>
+                <EliteButton type="button" variant="primary" className="!py-2 !px-3 !text-xs" onClick={handleChangePassword}>Actualizar</EliteButton>
+              </div>
+            </div>
+          )}
+
           <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
             <EliteButton type="button" variant="ghost" onClick={() => setEditingUser(null)}>Cancelar</EliteButton>
             <EliteButton type="submit">Guardar</EliteButton>

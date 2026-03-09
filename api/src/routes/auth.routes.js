@@ -13,4 +13,7 @@ router.post('/setup', authController.setupAdmin);
 // POST /api/auth/fcm-token
 router.post('/fcm-token', verifyToken, authController.updateFcmToken);
 
+// PUT /api/auth/change-password
+router.put('/change-password', verifyToken, authController.changePassword);
+
 module.exports = router;

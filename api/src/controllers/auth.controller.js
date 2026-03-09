@@ -109,3 +109,35 @@ exports.updateFcmToken = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor', error: error.message });
   }
 };
+
+// Cambiar contraseña
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'La contraseña antigua y nueva son obligatorias' });
+    }
+
+    const user = await User.findByPk(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Verificar contraseña antigua
+    const isMatched = bcrypt.compareSync(oldPassword, user.password);
+    if (!isMatched) {
+      return res.status(401).json({ message: 'La contraseña antigua es incorrecta' }); // No revelar demasiado pero claro
+    }
+
+    // Hashear nueva
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+  } catch (error) {
+    console.error('Error cambiando contraseña:', error);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+  }
+};

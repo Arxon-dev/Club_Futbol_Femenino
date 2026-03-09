@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,7 +32,8 @@ import java.util.Locale
 
 @Composable
 fun ChatScreen(
-    viewModel: ChatViewModel = hiltViewModel()
+    viewModel: ChatViewModel = hiltViewModel(),
+    onBackClick: (() -> Unit)? = null
 ) {
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -40,6 +43,8 @@ fun ChatScreen(
     val listState = rememberLazyListState()
 
     val currentUserId = viewModel.tokenManager.getUserId()
+    val isAdmin = viewModel.tokenManager.getRole() == "ADMIN"
+    val isPrivateChat = viewModel.targetUserId != null
 
     // Refresh data when screen resumes
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -66,19 +71,28 @@ fun ChatScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(start = 16.dp, end = 16.dp, top = 16.dp)
     ) {
-        Text(
-            text = "Chat del Club",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-        Text(
-            text = "Canal de comunicación del equipo",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (isPrivateChat && onBackClick != null) {
+                IconButton(onClick = onBackClick, modifier = Modifier.padding(end = 8.dp)) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                }
+            }
+            Column {
+                Text(
+                    text = if (isPrivateChat) "Chat de ${viewModel.targetUserName}" else "Chat del Club",
+                    style = if (isPrivateChat) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = if (isPrivateChat) "Mensaje directo" else "Canal de comunicación del equipo",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+        }
 
         if (error != null) {
             Card(
@@ -106,7 +120,12 @@ fun ChatScreen(
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 items(messages) { msg ->
-                    ChatBubble(msg = msg, isOwn = msg.userId == currentUserId)
+                    ChatBubble(
+                        msg = msg, 
+                        isOwn = msg.userId == currentUserId,
+                        isAdmin = isAdmin,
+                        onDeleteClick = { viewModel.deleteMessage(msg.id.toInt()) }
+                    )
                 }
             }
         }
@@ -167,7 +186,7 @@ fun ChatScreen(
 }
 
 @Composable
-fun ChatBubble(msg: ChatMessageDto, isOwn: Boolean) {
+fun ChatBubble(msg: ChatMessageDto, isOwn: Boolean, isAdmin: Boolean = false, onDeleteClick: () -> Unit = {}) {
     val userName = buildString {
         val p = msg.user?.profile
         if (!p?.firstName.isNullOrBlank()) append(p?.firstName)
@@ -220,12 +239,12 @@ fun ChatBubble(msg: ChatMessageDto, isOwn: Boolean) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = timeStr,
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    modifier = Modifier.align(if (isOwn) Alignment.End else Alignment.Start)
-                )
+                Text(text = timeStr, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.align(if (isOwn) Alignment.End else Alignment.Start))
+            }
+            if (isAdmin) {
+                IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp).align(Alignment.End)) {
+                    Icon(Icons.Filled.Delete, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                }
             }
         }
     }
