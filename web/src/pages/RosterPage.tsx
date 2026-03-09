@@ -256,23 +256,34 @@ export default function RosterPage() {
             <EliteInput label="Apellidos" value={formData.lastName || ''} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <EliteSelect label="Rol" value={formData.role || 'PLAYER'} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-              <option value="PLAYER">Jugadora</option>
-              <option value="COACH">Cuerpo Técnico</option>
-              <option value="DELEGATE">Delegado de Equipo</option>
-              <option value="MATERIAL_MANAGER">Encargado de Material</option>
-            </EliteSelect>
-            <EliteSelect label="Posición" value={formData.position || ''} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
-              <option value="">Seleccionar...</option>
-              <option value="Portera">Portera</option>
-              <option value="Cierre">Cierre</option>
-              <option value="Ala">Ala</option>
-              <option value="Pívot">Pívot</option>
-              <option value="Universal">Universal</option>
-            </EliteSelect>
-            <EliteInput label="Dorsal" type="number" value={formData.dorsal || ''} onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })} />
-          </div>
+          {formData.role === 'PLAYER' ? (
+            <div className="grid grid-cols-3 gap-3">
+              <EliteSelect label="Rol" value={formData.role || 'PLAYER'} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
+                <option value="PLAYER">Jugadora</option>
+                <option value="COACH">Cuerpo Técnico</option>
+                <option value="DELEGATE">Delegado de Equipo</option>
+                <option value="MATERIAL_MANAGER">Encargado de Material</option>
+              </EliteSelect>
+              <EliteSelect label="Posición" value={formData.position || ''} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
+                <option value="">Seleccionar...</option>
+                <option value="Portera">Portera</option>
+                <option value="Cierre">Cierre</option>
+                <option value="Ala">Ala</option>
+                <option value="Pívot">Pívot</option>
+                <option value="Universal">Universal</option>
+              </EliteSelect>
+              <EliteInput label="Dorsal" type="number" value={formData.dorsal || ''} onChange={(e) => setFormData({ ...formData, dorsal: e.target.value })} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              <EliteSelect label="Rol" value={formData.role || 'PLAYER'} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
+                <option value="PLAYER">Jugadora</option>
+                <option value="COACH">Cuerpo Técnico</option>
+                <option value="DELEGATE">Delegado de Equipo</option>
+                <option value="MATERIAL_MANAGER">Encargado de Material</option>
+              </EliteSelect>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <EliteInput label="Teléfono" value={formData.phone || ''} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
@@ -323,8 +334,8 @@ function MemberCard({
   const profile = member.profile;
   const firstName = profile?.firstName || '';
   const lastName = profile?.lastName || '';
-  const dorsal = profile?.dorsal;
-  const position = profile?.position || (isStaff ? 'Staff' : '');
+  const dorsal = member.role === 'PLAYER' ? profile?.dorsal : undefined;
+  const position = member.role === 'PLAYER' ? (profile?.position || '') : (isStaff ? 'Staff' : '');
   const initials = getInitials(firstName, lastName);
   const posCls = positionStyles[position] || 'bg-slate-500/15 text-slate-400 border-slate-500/20';
   const photoUrl = profile?.photoUrl;

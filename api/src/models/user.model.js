@@ -20,7 +20,7 @@ const User = sequelize.define('user', {
     allowNull: false
   },
   role: {
-    type: DataTypes.ENUM('ADMIN', 'COACH', 'PLAYER', 'PARENT', 'DELEGATE', 'MATERIAL_MANAGER'),
+    type: DataTypes.ENUM('ADMIN', 'COACH', 'PLAYER', 'PARENT', 'DELEGATE', 'MATERIAL_MANAGER', 'FAN'),
     defaultValue: 'PLAYER'
   },
   fcmToken: {

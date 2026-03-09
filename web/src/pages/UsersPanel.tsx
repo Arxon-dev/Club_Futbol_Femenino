@@ -107,8 +107,19 @@ export default function UsersPanel() {
       PARENT: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
       DELEGATE: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/20',
       MATERIAL_MANAGER: 'bg-orange-500/15 text-orange-400 border-orange-500/20',
+      FAN: 'bg-pink-500/15 text-pink-400 border-pink-500/20',
     };
     return colors[role] || 'bg-white/5 text-slate-400 border-white/10';
+  };
+
+  const roleLabels: Record<string, string> = {
+    ADMIN: 'Directivo',
+    COACH: 'Cuerpo Técnico',
+    PLAYER: 'Jugadora',
+    PARENT: 'Familiar',
+    DELEGATE: 'Delegado',
+    MATERIAL_MANAGER: 'Enc. Material',
+    FAN: 'Aficionado',
   };
 
   const columns = [
@@ -132,12 +143,15 @@ export default function UsersPanel() {
     {
       key: 'position',
       header: 'Posición / Dorsal',
-      render: (user: User) => (
-        <div>
-          <p className="text-slate-300">{user.profile?.position || '-'}</p>
-          <p className="text-xs text-slate-500">{user.profile?.dorsal ? `#${user.profile.dorsal}` : ''}</p>
-        </div>
-      )
+      render: (user: User) => {
+        if (user.role !== 'PLAYER') return <span className="text-slate-500">-</span>;
+        return (
+          <div>
+            <p className="text-slate-300">{user.profile?.position || '-'}</p>
+            <p className="text-xs text-slate-500">{user.profile?.dorsal ? `#${user.profile.dorsal}` : ''}</p>
+          </div>
+        );
+      }
     },
     {
       key: 'phone',
@@ -149,7 +163,7 @@ export default function UsersPanel() {
       header: 'Rol',
       render: (user: User) => (
         <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${roleBadge(user.role)}`}>
-          {user.role}
+          {roleLabels[user.role] || user.role}
         </span>
       )
     },
@@ -221,22 +235,32 @@ export default function UsersPanel() {
             <EliteInput label="Teléfono" value={formData.phone || ''} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
             <EliteInput label="Fecha de Nacimiento" type="date" value={formData.birthdate || ''} onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })} />
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <EliteSelect label="Posición" value={formData.position || ''} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
-              <option value="">Seleccionar...</option>
-              <option value="Portera">Portera</option>
-              <option value="Cierre">Cierre</option>
-              <option value="Ala">Ala</option>
-              <option value="Pívot">Pívot</option>
-              <option value="Universal">Universal</option>
-            </EliteSelect>
-            <EliteInput label="Dorsal" type="number" value={formData.dorsal || ''} onChange={(e) => setFormData({ ...formData, dorsal: parseInt(e.target.value) || undefined })} />
-            <EliteSelect label="Talla Ropa" value={formData.clothingSize || ''} onChange={(e) => setFormData({ ...formData, clothingSize: e.target.value })}>
-              <option value="">Seleccionar...</option>
-              <option value="XS">XS</option><option value="S">S</option><option value="M">M</option>
-              <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
-            </EliteSelect>
-          </div>
+          {editingUser?.role === 'PLAYER' ? (
+            <div className="grid grid-cols-3 gap-3">
+              <EliteSelect label="Posición" value={formData.position || ''} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
+                <option value="">Seleccionar...</option>
+                <option value="Portera">Portera</option>
+                <option value="Cierre">Cierre</option>
+                <option value="Ala">Ala</option>
+                <option value="Pívot">Pívot</option>
+                <option value="Universal">Universal</option>
+              </EliteSelect>
+              <EliteInput label="Dorsal" type="number" value={formData.dorsal || ''} onChange={(e) => setFormData({ ...formData, dorsal: parseInt(e.target.value) || undefined })} />
+              <EliteSelect label="Talla Ropa" value={formData.clothingSize || ''} onChange={(e) => setFormData({ ...formData, clothingSize: e.target.value })}>
+                <option value="">Seleccionar...</option>
+                <option value="XS">XS</option><option value="S">S</option><option value="M">M</option>
+                <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+              </EliteSelect>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              <EliteSelect label="Talla Ropa" value={formData.clothingSize || ''} onChange={(e) => setFormData({ ...formData, clothingSize: e.target.value })}>
+                <option value="">Seleccionar...</option>
+                <option value="XS">XS</option><option value="S">S</option><option value="M">M</option>
+                <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+              </EliteSelect>
+            </div>
+          )}
           <EliteTextarea label="Información Médica / Alergias" rows={3} value={formData.medicalInfo || ''} onChange={(e) => setFormData({ ...formData, medicalInfo: e.target.value })} placeholder="Alergias, medicamentos, lesiones..." />
           <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
             <EliteButton type="button" variant="ghost" onClick={() => setEditingUser(null)}>Cancelar</EliteButton>
@@ -253,10 +277,11 @@ export default function UsersPanel() {
           <EliteSelect label="Rol *" value={newUserFormData.role} onChange={(e) => setNewUserFormData({ ...newUserFormData, role: e.target.value })}>
             <option value="PLAYER">Jugadora</option>
             <option value="COACH">Entrenador</option>
-            <option value="ADMIN">Administrador</option>
+            <option value="ADMIN">Directivo</option>
             <option value="PARENT">Familiar</option>
             <option value="DELEGATE">Delegado de Equipo</option>
             <option value="MATERIAL_MANAGER">Encargado de Material</option>
+            <option value="FAN">Aficionado</option>
           </EliteSelect>
           <div className="grid grid-cols-2 gap-3">
             <EliteInput label="Nombre" value={newUserFormData.firstName} onChange={(e) => setNewUserFormData({ ...newUserFormData, firstName: e.target.value })} />

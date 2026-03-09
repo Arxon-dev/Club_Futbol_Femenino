@@ -30,6 +30,7 @@ fun ProfileScreen(
     var dorsal by remember { mutableStateOf("") }
     var position by remember { mutableStateOf("") }
     var medicalInfo by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf("") }
 
     val dateFormatDisplay = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateFormatApi = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -43,10 +44,11 @@ fun ProfileScreen(
     var expandedPosition by remember { mutableStateOf(false) }
     val positionOptions = listOf("Portera", "Cierre", "Ala", "Pívot", "Universal")
 
-    // When the state becomes Success and it's the first load, populate variables
     LaunchedEffect(uiState) {
         if (uiState is ProfileUiState.Success) {
-            val profile = (uiState as ProfileUiState.Success).profile
+            val successState = uiState as ProfileUiState.Success
+            val profile = successState.profile
+            role = successState.role
             firstName = profile.firstName ?: ""
             lastName = profile.lastName ?: ""
             phone = profile.phone ?: ""
@@ -191,41 +193,45 @@ fun ProfileScreen(
                             }
                         }
                         
-                        OutlinedTextField(
-                            value = dorsal,
-                            onValueChange = { dorsal = it },
-                            label = { Text("Dorsal") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.weight(1f)
-                        )
+                        if (role == "PLAYER") {
+                            OutlinedTextField(
+                                value = dorsal,
+                                onValueChange = { dorsal = it },
+                                label = { Text("Dorsal") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
 
-                    ExposedDropdownMenuBox(
-                        expanded = expandedPosition,
-                        onExpandedChange = { expandedPosition = !expandedPosition },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextField(
-                            value = position,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Posición en pista") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPosition) },
-                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                            modifier = Modifier.menuAnchor().fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
+                    if (role == "PLAYER") {
+                        ExposedDropdownMenuBox(
                             expanded = expandedPosition,
-                            onDismissRequest = { expandedPosition = false }
+                            onExpandedChange = { expandedPosition = !expandedPosition },
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            positionOptions.forEach { selectionOption ->
-                                DropdownMenuItem(
-                                    text = { Text(selectionOption) },
-                                    onClick = {
-                                        position = selectionOption
-                                        expandedPosition = false
-                                    }
-                                )
+                            OutlinedTextField(
+                                value = position,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Posición en pista") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPosition) },
+                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expandedPosition,
+                                onDismissRequest = { expandedPosition = false }
+                            ) {
+                                positionOptions.forEach { selectionOption ->
+                                    DropdownMenuItem(
+                                        text = { Text(selectionOption) },
+                                        onClick = {
+                                            position = selectionOption
+                                            expandedPosition = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

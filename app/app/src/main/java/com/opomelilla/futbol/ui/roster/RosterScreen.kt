@@ -149,8 +149,8 @@ fun RosterCard(member: RosterMemberDto, isStaff: Boolean = false) {
     val profile = member.profile
     val firstName = profile?.firstName ?: ""
     val lastName = profile?.lastName ?: ""
-    val dorsal = profile?.dorsal
-    val position = profile?.position ?: if (isStaff) "Staff" else ""
+    val dorsal = if (member.role == "PLAYER") profile?.dorsal else null
+    val position = if (member.role == "PLAYER") profile?.position ?: "" else if (isStaff) "Staff" else ""
     val initials = buildString {
         if (firstName.isNotEmpty()) append(firstName.first().uppercaseChar())
         if (lastName.isNotEmpty()) append(lastName.first().uppercaseChar())

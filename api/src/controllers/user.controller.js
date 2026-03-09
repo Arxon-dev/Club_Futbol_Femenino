@@ -56,6 +56,10 @@ exports.upsertProfile = async (req, res) => {
     // Buscamos si ya tiene perfil
     let profile = await Profile.findOne({ where: { userId } });
 
+    // Prevent 'Invalid date' / type errors with empty strings from frontend
+    if (profileData.birthdate === '') profileData.birthdate = null;
+    if (profileData.dorsal === '') profileData.dorsal = null;
+
     if (profile) {
       // Update
       await profile.update(profileData);

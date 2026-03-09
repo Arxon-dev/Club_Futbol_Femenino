@@ -7,7 +7,7 @@ exports.getRoster = async (req, res) => {
   try {
     const members = await User.findAll({
       where: {
-        role: { [Op.in]: ['PLAYER', 'COACH'] }
+        role: { [Op.in]: ['PLAYER', 'COACH', 'DELEGATE', 'MATERIAL_MANAGER'] }
       },
       attributes: ['id', 'email', 'role'],
       include: [
@@ -37,7 +37,7 @@ exports.addMember = async (req, res) => {
       return res.status(400).json({ message: 'Email y contraseña son obligatorios' });
     }
 
-    const validRoles = ['PLAYER', 'COACH'];
+    const validRoles = ['PLAYER', 'COACH', 'DELEGATE', 'MATERIAL_MANAGER'];
     const memberRole = validRoles.includes(role) ? role : 'PLAYER';
 
     // Check if email already exists
@@ -92,7 +92,7 @@ exports.updateMember = async (req, res) => {
     }
 
     // Update role if provided
-    if (role && ['PLAYER', 'COACH'].includes(role)) {
+    if (role && ['PLAYER', 'COACH', 'DELEGATE', 'MATERIAL_MANAGER'].includes(role)) {
       await user.update({ role });
     }
 
@@ -101,18 +101,18 @@ exports.updateMember = async (req, res) => {
       await user.profile.update({
         firstName: firstName !== undefined ? firstName : user.profile.firstName,
         lastName: lastName !== undefined ? lastName : user.profile.lastName,
-        dorsal: dorsal !== undefined ? dorsal : user.profile.dorsal,
+        dorsal: dorsal !== undefined ? (dorsal === '' ? null : dorsal) : user.profile.dorsal,
         position: position !== undefined ? position : user.profile.position,
         phone: phone !== undefined ? phone : user.profile.phone,
         clothingSize: clothingSize !== undefined ? clothingSize : user.profile.clothingSize,
         medicalInfo: medicalInfo !== undefined ? medicalInfo : user.profile.medicalInfo,
-        birthdate: birthdate !== undefined ? birthdate : user.profile.birthdate,
+        birthdate: birthdate !== undefined ? (birthdate === '' ? null : birthdate) : user.profile.birthdate,
         photoUrl: photoUrl !== undefined ? photoUrl : user.profile.photoUrl
       });
     } else {
       await Profile.create({
         userId: id,
-        firstName, lastName, dorsal, position, phone, clothingSize, medicalInfo, birthdate, photoUrl
+        firstName, lastName, dorsal: dorsal === '' ? null : dorsal, position, phone, clothingSize, medicalInfo, birthdate: birthdate === '' ? null : birthdate, photoUrl
       });
     }
 

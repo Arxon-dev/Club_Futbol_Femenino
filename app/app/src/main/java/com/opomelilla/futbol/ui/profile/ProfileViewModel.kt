@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 sealed class ProfileUiState {
     object Loading : ProfileUiState()
-    data class Success(val profile: ProfileDto) : ProfileUiState()
+    data class Success(val profile: ProfileDto, val role: String) : ProfileUiState()
     data class Error(val message: String) : ProfileUiState()
 }
 
@@ -40,8 +40,7 @@ class ProfileViewModel @Inject constructor(
                     return@launch
                 }
                 val response = apiService.getProfile(userId)
-                // If profile is null, return an empty one
-                _uiState.value = ProfileUiState.Success(response.profile ?: ProfileDto())
+                _uiState.value = ProfileUiState.Success(response.profile ?: ProfileDto(), response.role)
             } catch (e: Exception) {
                 _uiState.value = ProfileUiState.Error(e.message ?: "Failed to load profile")
             }
@@ -60,7 +59,11 @@ class ProfileViewModel @Inject constructor(
                 
                 val response = apiService.updateProfile(userId, profile)
                 if (response.isSuccessful) {
-                    _uiState.value = ProfileUiState.Success(response.body()?.profile ?: ProfileDto())
+                    val userProfile = response.body()
+                    _uiState.value = ProfileUiState.Success(
+                        userProfile?.profile ?: ProfileDto(),
+                        userProfile?.role ?: "PLAYER"
+                    )
                 } else {
                     val errorBody = response.errorBody()?.string()
                     _uiState.value = ProfileUiState.Error("Error: $errorBody")
