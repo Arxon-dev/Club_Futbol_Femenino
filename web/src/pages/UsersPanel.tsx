@@ -36,6 +36,7 @@ export default function UsersPanel() {
   const [error, setError] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const [formData, setFormData] = useState<UserProfile>({});
   const [newUserFormData, setNewUserFormData] = useState({ email: '', password: '', role: 'PLAYER', firstName: '', lastName: '' });
@@ -110,6 +111,15 @@ export default function UsersPanel() {
       setNewUserFormData({ email: '', password: '', role: 'PLAYER', firstName: '', lastName: '' });
       await loadUsers();
     } catch (err: any) { alert('Error: ' + err.message); }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      await userService.deleteUser(userToDelete.id);
+      setUserToDelete(null);
+      await loadUsers();
+    } catch (err: any) { alert('Error al eliminar: ' + err.message); }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -219,6 +229,14 @@ export default function UsersPanel() {
           >
             Editar
           </button>
+          {currentUser?.role === 'ADMIN' && currentUser?.id !== user.id && (
+            <button
+              onClick={() => setUserToDelete(user)}
+              className="text-sm text-elite-accent hover:text-elite-accent/80 font-medium transition-colors"
+            >
+              Eliminar
+            </button>
+          )}
         </div>
       )
     },
@@ -363,6 +381,21 @@ export default function UsersPanel() {
             <EliteButton type="submit">Crear Usuario</EliteButton>
           </div>
         </form>
+      </EliteModal>
+
+      {/* Delete User Confirmation Modal */}
+      <EliteModal isOpen={!!userToDelete} onClose={() => setUserToDelete(null)} title="Eliminar Usuario" maxWidth="max-w-md">
+        <div className="space-y-4">
+          <p className="text-slate-300">
+            ¿Estás seguro de que quieres eliminar a este usuario permanentemente? Esta acción no se puede deshacer y también eliminará su perfil.
+          </p>
+          <div className="pt-3 flex justify-end gap-2 border-t border-white/5">
+            <EliteButton type="button" variant="ghost" onClick={() => setUserToDelete(null)}>Cancelar</EliteButton>
+            <EliteButton type="button" variant="primary" onClick={handleDeleteUser} className="!bg-elite-accent hover:!bg-elite-accent/90 text-white">
+              Eliminar Usuario
+            </EliteButton>
+          </div>
+        </div>
       </EliteModal>
     </div>
   );

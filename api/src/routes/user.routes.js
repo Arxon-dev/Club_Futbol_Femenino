@@ -31,4 +31,13 @@ router.put('/:userId/profile', verifyToken, (req, res, next) => {
     }
 }, userController.upsertProfile);
 
+// DELETE /api/users/:userId - Delete a user (Admin only)
+router.delete('/:userId', verifyToken, (req, res, next) => {
+    if (req.userRole === 'ADMIN') {
+        next();
+    } else {
+        return res.status(403).json({ error: "Se requiere rol de Administrador para eliminar usuarios" });
+    }
+}, userController.deleteUser);
+
 module.exports = router;

@@ -121,3 +121,26 @@ exports.createUser = async (req, res) => {
     res.status(500).json({ error: "No se pudo crear el usuario" });
   }
 };
+
+// Eliminar un usuario (Admin)
+exports.deleteUser = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findByPk(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    // El perfil se eliminará en cascada si la base de datos lo tiene configurado así,
+    // o podemos eliminarlo manualmente por seguridad.
+    await Profile.destroy({ where: { userId } });
+    await user.destroy();
+
+    res.json({ message: "Usuario eliminado exitosamente" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "No se pudo eliminar el usuario" });
+  }
+};
