@@ -16,6 +16,7 @@ navigationCompose = "2.8.3"
 googleServices = "4.4.2"
 firebaseBom = "33.7.0"
 coil = "2.6.0"
+playAppUpdate = "2.1.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -43,6 +44,7 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+play-app-update = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "playAppUpdate" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

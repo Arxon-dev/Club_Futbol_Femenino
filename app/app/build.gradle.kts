@@ -17,10 +17,19 @@ android {
         applicationId = "com.opomelilla.futbol"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0"
+        versionCode = 5
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("../../.keystore/keystore.jks")
+            storePassword = "Sirius//03072503//"
+            keyAlias = "opomelilla"
+            keyPassword = "Sirius//03072503//"
+        }
     }
 
     buildTypes {
@@ -30,6 +39,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -66,6 +76,9 @@ dependencies {
 
     // Coil
     implementation(libs.coil.compose)
+
+    // Google Play In-App Updates
+    implementation(libs.play.app.update)
 
     // Retrofit & OkHttp
     implementation(libs.retrofit)

@@ -38,9 +38,18 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private lateinit var appUpdateManager: AppUpdateManager
+    private val UPDATE_REQUEST_CODE = 455
+
 
     @javax.inject.Inject
     lateinit var tokenManager: com.opomelilla.futbol.data.local.TokenManager
@@ -51,6 +60,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Initialize the AppUpdateManager
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        checkForAppUpdates()
+
         // Check for intent extras from FCMService
         handleIntent(intent)
 
@@ -254,6 +267,37 @@ class MainActivity : ComponentActivity() {
         } else {
              navController.navigate("profile") {
                 popUpTo("login") { inclusive = true }
+            }
+        }
+    }
+
+    private fun checkForAppUpdates() {
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    this,
+                    AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build(),
+                    UPDATE_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Resume update if it was interrupted
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    this,
+                    AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build(),
+                    UPDATE_REQUEST_CODE
+                )
             }
         }
     }
