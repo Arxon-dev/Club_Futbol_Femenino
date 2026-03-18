@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.DELETE
 import retrofit2.http.Query
 import retrofit2.http.Path
@@ -21,7 +22,7 @@ interface ApiService {
     @POST("auth/fcm-token")
     suspend fun sendFcmToken(@Body request: com.opomelilla.futbol.data.remote.model.FcmTokenRequest): retrofit2.Response<Unit>
 
-    @POST("auth/change-password")
+    @PUT("auth/change-password")
     suspend fun changePassword(@Body request: com.opomelilla.futbol.data.remote.model.ChangePasswordRequest): retrofit2.Response<Unit>
 
     @GET("users/{userId}/profile")
